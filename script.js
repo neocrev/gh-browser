@@ -145,12 +145,21 @@ function updateRateInfo(){
 /* ─── Load repo or user ─── */
 async function loadRepo(input){
   input=input.trim().replace(/https?:\/\/github\.com\//,'').replace(/\/$/,'');
+  const acEl=qs('#ac-list');
+  if(acEl)acEl.classList.remove('open');
+  // Handle repo: and user: prefixes
+  if(input.startsWith('repo:')){input=input.slice(5);const p=input.split('/');if(p.length>=2){const [o,r]=p;return loadSpecificRepo(o,r)}}
+  if(input.startsWith('user:')){return loadUserRepos(input.slice(5))}
   const parts=input.split('/');
   if(parts.length===1){
     await loadUserRepos(parts[0]);
     return;
   }
   const [owner,repoName]=parts;
+  loadSpecificRepo(owner,repoName);
+}
+
+async function loadSpecificRepo(owner,repoName){
   setStatus('Fetching repository…','loading');
   goBtn.disabled=true;
   try{
@@ -194,13 +203,13 @@ async function loadUserRepos(username){
           <p>${user.bio||''}</p>
         </div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;font-size:11px;color:var(--dim)">
-        <span>${ICONS.people} <strong style="color:var(--fg2)">${(user.followers||0).toLocaleString()}</strong> followers</span>
-        <span>${ICONS.people} <strong style="color:var(--fg2)">${(user.following||0).toLocaleString()}</strong> following</span>
-        <span>${ICONS.repo} <strong style="color:var(--fg2)">${user.public_repos}</strong> repos</span>
-        <span>${ICONS.star} <strong style="color:var(--fg2)">${totalStars.toLocaleString()}</strong> stars</span>
-        <span>${ICONS.calendar} <strong style="color:var(--fg2)">${years}y</strong> on GitHub</span>
-        ${topLang.length?`<span>${ICONS.code} <strong style="color:var(--fg2)">${topLang.join(', ')}</strong></span>`:''}
+      <div class="user-stats">
+        <span>${ICONS.people} <strong>${(user.followers||0).toLocaleString()}</strong> followers</span>
+        <span>${ICONS.people} <strong>${(user.following||0).toLocaleString()}</strong> following</span>
+        <span>${ICONS.repo} <strong>${user.public_repos}</strong> repos</span>
+        <span>${ICONS.star} <strong>${totalStars.toLocaleString()}</strong> stars</span>
+        <span>${ICONS.calendar} <strong>${years}y</strong> on GitHub</span>
+        ${topLang.length?`<span>${ICONS.code} <strong>${topLang.join(', ')}</strong></span>`:''}
         ${user.location?`<span>📍 ${user.location}</span>`:''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">
