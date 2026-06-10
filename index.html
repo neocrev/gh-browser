@@ -52,8 +52,14 @@
 
   <!-- Recent repos -->
   <div class="recent" id="recent">
-    <h3>Recent</h3>
-    <div class="tags" id="recent-tags"></div>
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Recent</h3>
+    <div class="recent-tags" id="recent-tags"></div>
+  </div>
+
+  <!-- Trending suggestions (shown when no repo loaded) -->
+  <div class="suggestions" id="suggestions" style="display:none">
+    <h3>Trending repos</h3>
+    <div class="grid" id="suggestions-grid"></div>
   </div>
 
   <!-- Status -->

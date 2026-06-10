@@ -34,6 +34,8 @@ const ICONS={
   repo:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>`,
   download:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
   left:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  history:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  org:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
 };
 
 function fileIcon(name){
@@ -48,18 +50,55 @@ function fileIcon(name){
   return ICONS.file;
 }
 
+/* ─── Trending repos (curated) ─── */
+const TRENDING=[
+  {owner:'rust-lang',repo:'rust',desc:'Empowering everyone to build reliable and efficient software.',stars:'99k',lang:'Rust',color:'#dea584'},
+  {owner:'denoland',repo:'deno',desc:'A modern runtime for JavaScript and TypeScript.',stars:'97k',lang:'Rust',color:'#dea584'},
+  {owner:'oven-sh',repo:'bun',desc:'Incredibly fast JavaScript runtime, bundler, test runner, and package manager.',stars:'75k',lang:'Zig',color:'#ec915c'},
+  {owner:'microsoft',repo:'vscode',desc:'Visual Studio Code — Open Source GUI editor.',stars:'165k',lang:'TypeScript',color:'#3178c6'},
+  {owner:'neovim',repo:'neovim',desc:'Hyperextensible Vim-based text editor.',stars:'84k',lang:'Vim Script',color:'#199f4b'},
+  {owner:'zed-industries',repo:'zed',desc:'High-performance, multiplayer code editor.',stars:'53k',lang:'Rust',color:'#dea584'},
+  {owner:'astral-sh',repo:'ruff',desc:'An extremely fast Python linter and code formatter, written in Rust.',stars:'35k',lang:'Rust',color:'#dea584'},
+  {owner:'astral-sh',repo:'uv',desc:'An extremely fast Python package and project manager.',stars:'40k',lang:'Rust',color:'#dea584'},
+  {owner:'tensorflow',repo:'tensorflow',desc:'An Open Source Machine Learning Framework for everyone.',stars:'188k',lang:'Python',color:'#3572a5'},
+  {owner:'facebook',repo:'react',desc:'A declarative, efficient, and flexible JavaScript library for building user interfaces.',stars:'232k',lang:'JavaScript',color:'#f1e05a'},
+  {owner:'curl',repo:'curl',desc:'A command line tool and library for transferring data with URL syntax.',stars:'36k',lang:'C',color:'#555'},
+  {owner:'yt-dlp',repo:'yt-dlp',desc:'A feature-rich command-line audio/video downloader.',stars:'95k',lang:'Python',color:'#3572a5'},
+  {owner:'FFmpeg',repo:'FFmpeg',desc:'A complete solution to record, convert and stream audio and video.',stars:'47k',lang:'C',color:'#555'},
+  {owner:'sharkdp',repo:'bat',desc:'A cat(1) clone with wings (syntax highlighting and Git integration).',stars:'51k',lang:'Rust',color:'#dea584'},
+  {owner:'sharkdp',repo:'fd',desc:'A simple, fast alternative to find.',stars:'35k',lang:'Rust',color:'#dea584'},
+  {owner:'BurntSushi',repo:'ripgrep',desc:'ripgrep is a line-oriented search tool that recursively searches your current directory.',stars:'50k',lang:'Rust',color:'#dea584'},
+  {owner:'nushell',repo:'nushell',desc:'A new type of shell for the 21st century in Rust.',stars:'34k',lang:'Rust',color:'#dea584'},
+  {owner:'fish-shell',repo:'fish-shell',desc:'The user-friendly command line shell.',stars:'27k',lang:'Rust',color:'#dea584'},
+  {owner:'zellij-org',repo:'zellij',desc:'A terminal workspace with batteries included.',stars:'22k',lang:'Rust',color:'#dea584'},
+  {owner:'sxyazi',repo:'yazi',desc:'Blazing fast terminal file manager written in Rust.',stars:'18k',lang:'Rust',color:'#dea584'},
+  {owner:'jgraph',repo:'drawio',desc:'draw.io is a JavaScript client-side editor for general diagramming.',stars:'42k',lang:'JavaScript',color:'#f1e05a'},
+  {owner:'typst',repo:'typst',desc:'A new markup-based typesetting system that is powerful and easy to learn.',stars:'36k',lang:'Rust',color:'#dea584'},
+  {owner:'LazyVim',repo:'LazyVim',desc:'Neovim setup for lazy and power users.',stars:'17k',lang:'Lua',color:'#000080'},
+  {owner:'helix-editor',repo:'helix',desc:'A post-modern modal text editor in Rust.',stars:'35k',lang:'Rust',color:'#dea584'},
+  {owner:'lapce',repo:'lapce',desc:'Lightning-fast and Powerful Code Editor written in Rust.',stars:'34k',lang:'Rust',color:'#dea584'},
+  {owner:'nixos',repo:'nixpkgs',desc:'NixOS — the purely functional Linux distribution.',stars:'19k',lang:'Nix',color:'#7eb7da'},
+  {owner:'git',repo:'git',desc:'Distributed version control system.',stars:'53k',lang:'C',color:'#555'},
+  {owner:'org-rs',repo:'org-rs',desc:'Org mode parser for Rust.',stars:'1k',lang:'Rust',color:'#dea584'},
+  {owner:'emacs-mirror',repo:'emacs',desc:'GNU Emacs — extensible, customizable, self-documenting.',stars:'4.8k',lang:'Emacs Lisp',color:'#c065db'},
+];
+
+/* ─── Language colors (GitHub-style) ─── */
+const LANG_COLORS={
+  'Python':'#3572a5','JavaScript':'#f1e05a','TypeScript':'#3178c6','Rust':'#dea584',
+  'Go':'#00add8','Java':'#b07219','C':'#555','C++':'#f34b7d','C#':'#178600',
+  'Ruby':'#701516','PHP':'#4f5d95','Shell':'#89e051','Lua':'#000080','Zig':'#ec915c',
+  'Vim Script':'#199f4b','Nix':'#7eb7da','Emacs Lisp':'#c065db',
+};
+
 /* ─── State ─── */
 let state={owner:'',repo:'',branch:'',path:''};
 let repoData=null;
-let fileCache={};
 
 /* ─── DOM refs ─── */
-const $=id=>document.getElementById(id);
 const inp=qs('#gh-input');
 const goBtn=qs('#gh-go');
 const statusEl=qs('#status');
-const mainEl=qs('#main');
-const recentEl=qs('#recent');
 
 /* ─── GitHub API ─── */
 const token=storage('token');
@@ -88,13 +127,16 @@ function updateRateInfo(){
   qsa('.rate-info').forEach(el=>{el.textContent=`API: ${rateLimit.remaining} req left (reset ${time})`});
 }
 
-/* ─── Load repo ─── */
+/* ─── Load repo or user ─── */
 async function loadRepo(input){
   input=input.trim().replace(/https?:\/\/github\.com\//,'').replace(/\/$/,'');
   const parts=input.split('/');
-  if(parts.length<2){setStatus('Формат: owner/repo или ссылка на GitHub','error');return}
+  if(parts.length===1){
+    await loadUserRepos(parts[0]);
+    return;
+  }
   const [owner,repoName]=parts;
-  setStatus('Загрузка информации о репозитории…','loading');
+  setStatus('Fetching repository…','loading');
   goBtn.disabled=true;
   try{
     const repo=await ghFetch(`${API}/repos/${owner}/${repoName}`);
@@ -104,22 +146,66 @@ async function loadRepo(input){
     setStatus('','');
     render();
   }catch(e){
-    if(e.status===404)setStatus(`Репозиторий ${owner}/${repoName} не найден`,'error');
-    else if(e.status===403)setStatus(`Лимит API: ${e.message}. Добавьте токен в localStorage: storage('token','ghp_...')`,'error');
-    else setStatus(`Ошибка: ${e.message}`,'error');
+    if(e.status===404)setStatus(`Repository ${owner}/${repoName} not found`,'error');
+    else if(e.status===403)setStatus(`API rate limit: ${e.message}. Add a token: storage("token","ghp_...")`,'error');
+    else setStatus(`Error: ${e.message}`,'error');
+  }finally{goBtn.disabled=false}
+}
+
+async function loadUserRepos(username){
+  setStatus(`Fetching repos for ${username}…`,'loading');
+  goBtn.disabled=true;
+  const el=qs('#recent');
+  const sug=qs('#suggestions');
+  if(el)el.style.display='none';
+  if(sug)sug.style.display='none';
+  try{
+    const repos=await ghFetch(`${API}/users/${username}/repos?per_page=30&sort=updated`);
+    const root=qs('#content');
+    root.innerHTML=`
+      <div class="repo-header" style="display:flex">
+        <div class="info">
+          <h2 style="display:flex;align-items:center;gap:8px;font-size:15px">${ICONS.org} <span>${username}</span></h2>
+          <p>${repos.length} public repositories</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:8px">
+        ${repos.map(r=>`
+          <div class="sug-card" data-repo="${r.full_name}" style="cursor:pointer">
+            <div class="top">
+              <span class="name">${r.name}</span>
+              <span class="stars">${ICONS.star} ${(r.stargazers_count||0).toLocaleString()}</span>
+            </div>
+            <div class="desc">${r.description||'No description'}</div>
+            <div class="lang">${r.language?`<span class="dot" style="background:${LANG_COLORS[r.language]||'#888'}"></span>${r.language}`:'<span style="color:var(--dim)">—</span>'}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    root.querySelectorAll('.sug-card').forEach(c=>c.addEventListener('click',()=>{
+      inp.value=c.dataset.repo;
+      loadRepo(c.dataset.repo);
+    }));
+    setStatus('','');
+  }catch(e){
+    setStatus(`Error: ${e.message}`,'error');
   }finally{goBtn.disabled=false}
 }
 
 async function navigate(path){
   if(path===state.path)return;
   state.path=path;
-  setStatus('Загрузка…','loading');
-  try{render()}catch(e){setStatus(`Ошибка: ${e.message}`,'error')}
+  setStatus('Loading…','loading');
+  try{render()}catch(e){setStatus(`Error: ${e.message}`,'error')}
 }
 
 /* ─── Render ─── */
 function render(){
   updateRateInfo();
+  const sugEl=qs('#suggestions');
+  const recEl=qs('#recent');
+  if(sugEl)sugEl.style.display='none';
+  if(recEl)recEl.style.display='none';
   renderRepoHeader();
   renderBreadcrumb();
   renderContent();
@@ -205,12 +291,12 @@ function renderFolderActions(root,items){
 }
 
 async function openFile(path){
-  setStatus('Загрузка файла…','loading');
+  setStatus('Loading file…','loading');
   try{
     const item=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/contents/${path}?ref=${state.branch}`);
     renderFilePreview(qs('#content'),item);
     setStatus('','');
-  }catch(e){setStatus(`Ошибка: ${e.message}`,'error')}
+  }catch(e){setStatus(`Error: ${e.message}`,'error')}
 }
 
 function renderFilePreview(root,item){
@@ -327,6 +413,28 @@ function renderRecent(){
   el.querySelectorAll('.tag').forEach(t=>t.addEventListener('click',()=>{inp.value=t.textContent;loadRepo(t.textContent)}));
 }
 
+/* ─── Trending suggestions ─── */
+function renderSuggestions(){
+  const el=qs('#suggestions');
+  const grid=qs('#suggestions-grid');
+  if(!el||!grid)return;
+  el.style.display='block';
+  grid.innerHTML=TRENDING.map(r=>`
+    <div class="sug-card" data-repo="${r.owner}/${r.repo}">
+      <div class="top">
+        <span class="name">${r.owner}/${r.repo}</span>
+        <span class="stars">★ ${r.stars}</span>
+      </div>
+      <div class="desc">${r.desc}</div>
+      <div class="lang"><span class="dot" style="background:${r.color}"></span>${r.lang}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.sug-card').forEach(c=>c.addEventListener('click',()=>{
+    inp.value=c.dataset.repo;
+    loadRepo(c.dataset.repo);
+  }));
+}
+
 /* ─── Status ─── */
 function setStatus(msg,type){
   statusEl.textContent=msg||'';
@@ -343,6 +451,7 @@ function setStatus(msg,type){
 /* ─── Init ─── */
 document.addEventListener('DOMContentLoaded',()=>{
   renderRecent();
+  renderSuggestions();
   goBtn.addEventListener('click',()=>loadRepo(inp.value));
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')loadRepo(inp.value)});
   inp.focus();
