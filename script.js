@@ -36,6 +36,8 @@ const ICONS={
   left:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`,
   history:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   org:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  people:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
 };
 
 function fileIcon(name){
@@ -153,27 +155,46 @@ async function loadRepo(input){
 }
 
 async function loadUserRepos(username){
-  setStatus(`Fetching repos for ${username}…`,'loading');
+  setStatus(`Fetching ${username}…`,'loading');
   goBtn.disabled=true;
   const el=qs('#recent');
   const sug=qs('#suggestions');
   if(el)el.style.display='none';
   if(sug)sug.style.display='none';
   try{
-    const repos=await ghFetch(`${API}/users/${username}/repos?per_page=30&sort=updated`);
+    const [user,repos]=await Promise.all([
+      ghFetch(`${API}/users/${username}`),
+      ghFetch(`${API}/users/${username}/repos?per_page=30&sort=updated`)
+    ]);
+    const totalStars=repos.reduce((s,r)=>s+(r.stargazers_count||0),0);
+    const langCount={};
+    repos.forEach(r=>{if(r.language)langCount[r.language]=(langCount[r.language]||0)+1});
+    const topLang=Object.entries(langCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]);
+    const created=new Date(user.created_at);
+    const years=Math.floor((Date.now()-created)/31557600000);
     const root=qs('#content');
     root.innerHTML=`
       <div class="repo-header" style="display:flex">
+        <img class="avatar" src="${user.avatar_url}&s=80" alt="${username}" style="width:40px;height:40px;border-radius:8px">
         <div class="info">
-          <h2 style="display:flex;align-items:center;gap:8px;font-size:15px">${ICONS.org} <span>${username}</span></h2>
-          <p>${repos.length} public repositories</p>
+          <h2 style="display:flex;align-items:center;gap:8px;font-size:15px">${user.name||username} <span style="font-size:12px;color:var(--dim);font-weight:400">@${username}</span></h2>
+          <p>${user.bio||''}</p>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:8px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;font-size:11px;color:var(--dim)">
+        <span>${ICONS.people} <strong style="color:var(--fg2)">${(user.followers||0).toLocaleString()}</strong> followers</span>
+        <span>${ICONS.people} <strong style="color:var(--fg2)">${(user.following||0).toLocaleString()}</strong> following</span>
+        <span>${ICONS.repo} <strong style="color:var(--fg2)">${user.public_repos}</strong> repos</span>
+        <span>${ICONS.star} <strong style="color:var(--fg2)">${totalStars.toLocaleString()}</strong> stars</span>
+        <span>${ICONS.calendar} <strong style="color:var(--fg2)">${years}y</strong> on GitHub</span>
+        ${topLang.length?`<span>${ICONS.code} <strong style="color:var(--fg2)">${topLang.join(', ')}</strong></span>`:''}
+        ${user.location?`<span>📍 ${user.location}</span>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">
         ${repos.map(r=>`
           <div class="sug-card" data-repo="${r.full_name}" style="cursor:pointer">
             <div class="top">
-              <span class="name">${r.name}</span>
+              <span class="name">${r.name}${r.fork?' <span style="color:var(--dim);font-size:10px">forked</span>':''}</span>
               <span class="stars">${ICONS.star} ${(r.stargazers_count||0).toLocaleString()}</span>
             </div>
             <div class="desc">${r.description||'No description'}</div>
