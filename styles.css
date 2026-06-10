@@ -70,7 +70,7 @@ body{
   text-transform:uppercase;letter-spacing:.8px;
   display:flex;align-items:center;gap:5px;
 }
-.recent h3 svg,.suggestions h3 svg{width:11px;height:11px;flex-shrink:0;opacity:.7}
+.recent h3 svg,.suggestions h3 svg{width:9px;height:9px;flex-shrink:0;opacity:.65}
 .recent-tags{display:flex;flex-wrap:wrap;gap:5px}
 .recent-tags .tag{
   background:var(--bg3);border:1px solid var(--bg4);border-radius:5px;
