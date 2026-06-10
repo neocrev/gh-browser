@@ -52,6 +52,19 @@ function fileIcon(name){
   return ICONS.file;
 }
 
+function extToLang(ext){
+  const m={
+    py:'python',js:'javascript',ts:'typescript',rs:'rust',go:'go',c:'c',cpp:'cpp',h:'c',hpp:'cpp',
+    java:'java',rb:'ruby',php:'php',swift:'swift',kt:'kotlin',scala:'scala',m:'objectivec',mm:'objectivec',
+    sh:'bash',bash:'bash',zsh:'bash',fish:'bash',pl:'perl',lua:'lua',r:'r',sql:'sql',
+    css:'css',scss:'scss',less:'less',html:'xml',htm:'xml',xml:'xml',svg:'xml',
+    yaml:'yaml',yml:'yaml',json:'json',toml:'ini',ini:'ini',cfg:'ini',conf:'ini',
+    md:'markdown',rst:'rst',txt:'plaintext','':null,
+    dockerfile:'dockerfile',makefile:'makefile','gitignore':'plaintext',env:'plaintext',
+  };
+  return m[ext]||null;
+}
+
 /* ─── Trending repos (curated) ─── */
 const TRENDING=[
   {owner:'rust-lang',repo:'rust',desc:'Empowering everyone to build reliable and efficient software.',stars:'99k',lang:'Rust',color:'#dea584'},
@@ -360,11 +373,23 @@ function renderFilePreview(root,item){
     preview.append(note);
   }else{
     const pre=el('pre');
+    const langClass=extToLang(ext);
+    if(langClass)pre.className='language-'+langClass;
     pre.textContent='Loading…';
     preview.append(pre);
     fetch(item.download_url).then(r=>r.text()).then(t=>{
       pre.textContent=t;
+      if(typeof hljs!=='undefined')try{hljs.highlightElement(pre)}catch(e){}
     }).catch(()=>{pre.textContent='[Error loading file content]'});
+    if(typeof hljs==='undefined'){
+      const link=document.createElement('link');
+      link.rel='stylesheet';link.href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/tokyo-night-dark.min.css';
+      document.head.append(link);
+      const script=document.createElement('script');
+      script.src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js';
+      script.onload=()=>{pre.textContent&&hljs.highlightElement(pre)};
+      document.head.append(script);
+    }
   }
   root.append(preview);
 }
