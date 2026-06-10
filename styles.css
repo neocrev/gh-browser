@@ -64,27 +64,22 @@ body{
 .status .rate-info{margin-left:auto;font-size:11px;color:var(--dim)}
 
 /* Recent repos */
-.recent{margin-bottom:16px}
-.recent h3{
-  font-size:12px;color:var(--dim);margin-bottom:10px;
-  text-transform:uppercase;letter-spacing:.6px;
-  display:flex;align-items:center;gap:6px;
+.recent{margin-bottom:20px}
+.recent h3,.suggestions h3{
+  font-size:11px;color:var(--dim);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:.8px;
+  display:flex;align-items:center;gap:5px;
 }
-.recent h3 svg{width:14px;height:14px;flex-shrink:0}
+.recent h3 svg,.suggestions h3 svg{width:11px;height:11px;flex-shrink:0;opacity:.7}
 .recent-tags{display:flex;flex-wrap:wrap;gap:5px}
 .recent-tags .tag{
   background:var(--bg3);border:1px solid var(--bg4);border-radius:5px;
-  padding:5px 11px;font-size:11px;color:var(--fg2);cursor:pointer;transition:all .12s;
-  user-select:none;
+  padding:4px 10px;font-size:11px;color:var(--fg2);cursor:pointer;transition:all .12s;
 }
 .recent-tags .tag:hover{border-color:var(--green);color:var(--green);background:var(--bg2)}
 
 /* === SUGGESTIONS / TRENDING SECTION === */
 .suggestions{margin-bottom:20px}
-.suggestions h3{
-  font-size:12px;color:var(--dim);margin-bottom:10px;
-  text-transform:uppercase;letter-spacing:.6px;
-}
 .suggestions .grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
 }
