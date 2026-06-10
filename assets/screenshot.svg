@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 460" xml:space="preserve">
+  <defs>
+    <style>
+      @font-face{font-family:'SF Mono';src:local('SF Mono'),local('Menlo'),local('Consolas'),local('Courier New');}
+    </style>
+  </defs>
+  <rect x="4" y="4" rx="9" ry="9" width="692" height="452" fill="#00000033"/>
+  <rect x="0" y="0" rx="9" ry="9" width="692" height="452" fill="#1a1b26"/>
+  <rect x="0" y="0" rx="9" ry="9" width="692" height="36" fill="#16161e"/>
+  <rect x="0" y="18" width="692" height="18" fill="#16161e"/>
+  <circle cx="16" cy="18" r="5.5" fill="#ff5f57"/>
+  <circle cx="34" cy="18" r="5.5" fill="#febc2e"/>
+  <circle cx="52" cy="18" r="5.5" fill="#28c840"/>
+  <text x="346" y="23" text-anchor="middle" font-size="11" fill="#606060" font-family="'SF Mono',Menlo,monospace">gh-browser — neocrev/opencode</text>
+
+  <!-- Repo header -->
+  <rect x="20" y="48" rx="6" ry="6" width="660" height="56" fill="#24283b"/>
+  <image href="https://avatars.githubusercontent.com/u/1?v=4" width="32" height="32" x="32" y="60" rx="4" ry="4" opacity="0"/>
+  <rect x="32" y="60" width="32" height="32" rx="4" fill="#3b4261"/>
+  <circle cx="48" cy="68" r="6" fill="#89a0c2" opacity=".4"/>
+  <circle cx="48" cy="80" r="6" fill="#89a0c2" opacity=".2"/>
+  <text x="74" y="71" font-size="14" fill="#c0caf5" font-weight="700" font-family="-apple-system,'Segoe UI',sans-serif">neocrev/opencode</text>
+  <text x="74" y="88" font-size="11" fill="#a9b1d6" font-family="-apple-system,'Segoe UI',sans-serif">Open-source AI-powered coding agent for the terminal</text>
+
+  <!-- Stars/forks -->
+  <text x="510" y="68" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">★ 152,341</text>
+  <text x="510" y="86" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">⑂ 8,295</text>
+
+  <!-- Breadcrumb -->
+  <rect x="20" y="112" rx="6" ry="6" width="660" height="28" fill="#24283b"/>
+  <text x="36" y="130" font-size="12" fill="#89a0c2" font-family="-apple-system,'Segoe UI',sans-serif">opencode</text>
+  <text x="104" y="130" font-size="12" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">/</text>
+  <text x="114" y="130" font-size="12" fill="#89a0c2" font-family="-apple-system,'Segoe UI',sans-serif">src</text>
+  <text x="144" y="130" font-size="12" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">/</text>
+  <text x="154" y="130" font-size="12" fill="#a9b1d6" font-family="-apple-system,'Segoe UI',sans-serif">opencode_cli</text>
+
+  <!-- Folder download bar -->
+  <rect x="20" y="148" rx="6" ry="6" width="660" height="36" fill="#24283b"/>
+  <text x="36" y="170" font-size="12" fill="#a9b1d6" font-family="-apple-system,'Segoe UI',sans-serif"><tspan fill="#89a0c2">24</tspan> items, <tspan fill="#565f89">342.1 KB total</tspan></text>
+  <rect x="540" y="155" rx="4" ry="4" width="124" height="24" fill="#b4f9f8"/>
+  <text x="602" y="171" text-anchor="middle" font-size="11" fill="#0f0f1a" font-weight="600" font-family="-apple-system,'Segoe UI',sans-serif">⬇ Download ZIP</text>
+
+  <!-- File tree header -->
+  <rect x="20" y="192" rx="6" ry="6" width="660" height="26" fill="#1f2233"/>
+  <text x="36" y="208" font-size="10" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">NAME</text>
+  <text x="536" y="208" font-size="10" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">SIZE</text>
+
+  <!-- File items -->
+  <text x="36" y="224" font-size="11" fill="#89a0c2">📁</text>
+  <text x="56" y="224" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">commands</text>
+  <text x="36" y="242" font-size="11" fill="#89a0c2">📁</text>
+  <text x="56" y="242" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">config</text>
+  <text x="36" y="260" font-size="11" fill="#89a0c2">📁</text>
+  <text x="56" y="260" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">providers</text>
+
+  <text x="36" y="278" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="278" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">__init__.py</text>
+  <text x="536" y="278" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">1.2 KB</text>
+
+  <text x="36" y="296" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="296" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">app.py</text>
+  <text x="536" y="296" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">24.7 KB</text>
+
+  <text x="36" y="314" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="314" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">llm.py</text>
+  <text x="536" y="314" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">18.3 KB</text>
+
+  <text x="36" y="332" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="332" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">session.py</text>
+  <text x="536" y="332" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">8.9 KB</text>
+
+  <text x="36" y="350" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="350" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">tool_manager.py</text>
+  <text x="536" y="350" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">6.1 KB</text>
+
+  <text x="36" y="368" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="368" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">types.py</text>
+  <text x="536" y="368" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">4.5 KB</text>
+
+  <text x="36" y="386" font-size="11" fill="#b4f9f8">&lt;/&gt;</text>
+  <text x="56" y="386" font-size="12" fill="#c0caf5" font-family="-apple-system,'Segoe UI',sans-serif">utils.py</text>
+  <text x="536" y="386" font-size="11" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">3.2 KB</text>
+
+  <!-- Status bar -->
+  <rect x="20" y="400" rx="6" ry="6" width="660" height="28" fill="#24283b"/>
+  <text x="36" y="418" font-size="10" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">API: 4921 req remaining (reset 06:22:17)</text>
+  <text x="630" y="418" font-size="10" fill="#565f89" font-family="-apple-system,'Segoe UI',sans-serif">gh-browser 1.0</text>
+</svg>
