@@ -261,23 +261,33 @@ async function renderTree(root,path,prefetched){
   const items=prefetched||await ghFetch(`${API}/repos/${state.owner}/${state.repo}/contents/${path}?ref=${state.branch}`);
   if(!Array.isArray(items))return;
   const tree=el('div',{class:'file-tree'});
-  tree.innerHTML=`<div class="header"><span>Name</span><span class="size">Size</span><span class="dl"></span></div>`;
+  const search=el('input',{class:'file-search',type:'text',placeholder:'Search files…'});
+  tree.append(search);
+  tree.innerHTML+=`<div class="header"><span>Name</span><span class="size">Size</span><span class="dl"></span></div>`;
+  const body=el('div',{class:'file-body'});
   const sorted=[...items].sort((a,b)=>{
     if(a.type!==b.type)return a.type==='dir'?-1:1;
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
   });
   for(const item of sorted){
-    const row=el('div',{class:'file-item'});
+    const row=el('div',{class:'file-item',dataset:item.name.toLowerCase()});
     const icon=item.type==='dir'?ICONS.folder:fileIcon(item.name);
     const dl=item.type==='file'?`<a href="${item.download_url}" target="_blank" download>${ICONS.download}</a>`:'';
-    const arrow=item.type==='dir'?'<span class="dir-arrow">›</span>':'';
     const itemPath=path?`${path}/${item.name}`:item.name;
-    row.innerHTML=`<div class="name">${icon}<span>${item.name}</span>${arrow}</div><div class="size">${item.type==='file'?humanSize(item.size):'-'}</div><div class="dl">${dl}</div>`;
+    row.innerHTML=`<div class="name">${icon}<span>${item.name}</span></div><div class="size">${item.type==='file'?humanSize(item.size):'-'}</div><div class="dl">${dl}</div>`;
     if(item.type==='dir')row.addEventListener('click',()=>navigate(itemPath));
     else row.addEventListener('click',()=>openFile(itemPath));
-    tree.append(row);
+    body.append(row);
   }
+  tree.append(body);
   root.append(tree);
+
+  search.addEventListener('input',()=>{
+    const q=search.value.toLowerCase();
+    body.querySelectorAll('.file-item').forEach(r=>{
+      r.style.display=r.dataset.name.includes(q)?'':'none';
+    });
+  });
 }
 
 function renderFolderActions(root,items){
@@ -404,13 +414,30 @@ function saveRecent(name){
   renderRecent();
 }
 
+function removeRecent(name){
+  let list=storage('recent')||[];
+  list=list.filter(r=>r!==name);
+  storage('recent',list);
+  renderRecent();
+}
+
 function renderRecent(){
   const list=storage('recent')||[];
   const el=qs('#recent-tags');
   if(!el)return;
   if(!list.length){el.innerHTML='';return}
-  el.innerHTML=list.map(r=>`<span class="tag">${r}</span>`).join('');
-  el.querySelectorAll('.tag').forEach(t=>t.addEventListener('click',()=>{inp.value=t.textContent;loadRepo(t.textContent)}));
+  el.innerHTML=list.map(r=>`<span class="tag"><span class="rm" data-name="${r}">✕</span>${r}</span>`).join('');
+  el.querySelectorAll('.tag').forEach(t=>{
+    t.addEventListener('click',e=>{
+      if(e.target.classList.contains('rm'))return;
+      inp.value=t.textContent.replace('✕','').trim();
+      loadRepo(inp.value);
+    });
+  });
+  el.querySelectorAll('.rm').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    removeRecent(b.dataset.name);
+  }));
 }
 
 /* ─── Trending suggestions ─── */
@@ -453,8 +480,44 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderRecent();
   renderSuggestions();
   goBtn.addEventListener('click',()=>loadRepo(inp.value));
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')loadRepo(inp.value)});
   inp.focus();
+
+  // Autocomplete + Enter handling
+  const acEl=qs('#ac-list');
+  let acIdx=-1;
+  inp.addEventListener('input',()=>{
+    const v=inp.value.trim().toLowerCase();
+    if(!v){acEl.classList.remove('open');acEl.innerHTML='';return}
+    const recent=storage('recent')||[];
+    const all=[...recent.map(r=>({label:r,type:'recent'})),...TRENDING.map(r=>({label:`${r.owner}/${r.repo}`,type:'trending'}))];
+    const unique=[];
+    const seen=new Set();
+    for(const item of all){if(!seen.has(item.label)){seen.add(item.label);unique.push(item)}}
+    const matches=unique.filter(x=>x.label.toLowerCase().includes(v)).slice(0,8);
+    if(!matches.length){acEl.classList.remove('open');acEl.innerHTML='';return}
+    acIdx=-1;
+    acEl.innerHTML=matches.map((m,i)=>`<div class="ac-item" data-idx="${i}"><span class="ac-label">${m.label}</span><span class="ac-type">${m.type}</span></div>`).join('');
+    acEl.classList.add('open');
+    acEl.querySelectorAll('.ac-item').forEach(el=>el.addEventListener('click',()=>{
+      inp.value=el.querySelector('.ac-label').textContent;
+      acEl.classList.remove('open');
+      loadRepo(inp.value);
+    }));
+  });
+  inp.addEventListener('keydown',e=>{
+    const items=acEl.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);highlightAc(items)}
+    else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);highlightAc(items)}
+    else if(e.key==='Enter'){
+      if(acIdx>=0&&items.length){e.preventDefault();items[acIdx].click()}
+      else{acEl.classList.remove('open');loadRepo(inp.value)}
+    }
+  });
+  function highlightAc(items){
+    items.forEach((el,i)=>el.classList.toggle('hl',i===acIdx));
+    if(acIdx>=0)items[acIdx].scrollIntoView({block:'nearest'});
+  }
+  document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap')&&!e.target.closest('#gh-input'))acEl.classList.remove('open')});
 
   // Load from URL params
   const p=new URLSearchParams(location.search);
