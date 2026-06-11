@@ -244,7 +244,7 @@ body{
 }
 
 /* ─── Commit detail (inline diff) ─── */
-.commit-detail{
+.commit-detail,.pr-detail,.issue-detail{
   border-top:1px solid rgba(255,255,255,.04);background:rgba(0,0,0,.15);
   animation:fadeIn .2s ease;
 }
@@ -276,6 +276,26 @@ body{
 .file-status.file-renamed{color:var(--blue);background:rgba(122,162,247,.1)}
 .file-path{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg2)}
 .file-stats{font-size:10px;color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ─── Issue labels & comments ─── */
+.issue-labels{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.issue-label{
+  font-size:10px;padding:2px 8px;border-radius:10px;
+  border:1px solid;font-weight:500;
+}
+.issue-comments{border-top:1px solid rgba(255,255,255,.06);padding-top:10px;margin-top:8px}
+.comments-header{font-size:11px;font-weight:600;color:var(--fg2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.comment-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:8px 10px;margin-bottom:6px;
+  background:rgba(255,255,255,.02);border-radius:6px;
+  border:1px solid rgba(255,255,255,.04);
+}
+.comment-item .commit-avatar{width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:1px}
+.comment-item .comment-body{flex:1;min-width:0}
+.comment-item .comment-meta{font-size:10px;color:var(--dim);margin-bottom:3px}
+.comment-item .comment-meta strong{color:var(--fg2);font-weight:600}
+.comment-item .comment-text{font-size:11px;color:var(--fg2);line-height:1.5;white-space:pre-wrap}
 
 .pr-item,.issue-item{
   display:flex;align-items:flex-start;gap:10px;

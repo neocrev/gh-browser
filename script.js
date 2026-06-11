@@ -425,7 +425,6 @@ async function renderPRs(pane){
   for(const pr of data){
     const item=document.createElement('div');
     item.className='pr-item';
-    item.addEventListener('click',()=>window.open(pr.html_url,'_blank'));
     let stateClass='open',stateLabel='Open';
     if(pr.merged_at){stateClass='merged';stateLabel='Merged'}
     else if(pr.state==='closed'){stateClass='closed';stateLabel='Closed'}
@@ -436,7 +435,47 @@ async function renderPRs(pane){
         <div class="pr-meta">#${pr.number} by <strong>${escHtml(pr.user.login)}</strong> ${timeAgo(pr.created_at)}</div>
       </div>
       <span class="pr-number">#${pr.number}</span>
+      <span class="commit-expand">▶</span>
     `;
+    const detail=document.createElement('div');
+    detail.className='pr-detail';
+    detail.style.display='none';
+    item.addEventListener('click',async(e)=>{
+      if(e.target.closest('a'))return;
+      const expanded=detail.style.display!=='none';
+      if(expanded){detail.style.display='none';item.querySelector('.commit-expand').textContent='▶';return}
+      if(!detail._loaded){
+        detail.innerHTML='<div class="list-loading"><span class="spinner"></span>Loading PR details…</div>';
+        try{
+          const [prDetail, files] = await Promise.all([
+            ghFetch(`${API}/repos/${state.owner}/${state.repo}/pulls/${pr.number}`),
+            ghFetch(`${API}/repos/${state.owner}/${state.repo}/pulls/${pr.number}/files?per_page=50`)
+          ]);
+          detail._loaded=true;
+          let html='<div class="commit-detail-body">';
+          if(prDetail.body)html+=`<div class="commit-desc">${escHtml(prDetail.body.substring(0,3000))}</div>`;
+          const stats=prDetail.additions!=null?`<div class="commit-stats"><span class="stat-add">+${prDetail.additions}</span> <span class="stat-del">-${prDetail.deletions}</span> <span class="stat-total">${prDetail.changed_files} files</span></div>`:'';
+          if(stats)html+=stats;
+          html+='<div class="commit-files">';
+          for(const f of (files||[])){
+            let statusClass='file-modified',statusLabel='M';
+            if(f.status==='added'){statusClass='file-added';statusLabel='A'}
+            else if(f.status==='removed'){statusClass='file-removed';statusLabel='D'}
+            else if(f.status==='renamed'){statusClass='file-renamed';statusLabel='R'}
+            html+=`<div class="commit-file">
+              <span class="file-status ${statusClass}">${statusLabel}</span>
+              <span class="file-path">${escHtml(f.filename)}</span>
+              <span class="file-stats">+${f.additions}/-${f.deletions}</span>
+            </div>`;
+          }
+          html+='</div></div>';
+          detail.innerHTML=html;
+        }catch(e){detail.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`}
+      }
+      detail.style.display='block';
+      item.querySelector('.commit-expand').textContent='▼';
+    });
+    item.append(detail);
     list.append(item);
   }
   pane.innerHTML='';
@@ -450,10 +489,9 @@ async function renderIssues(pane){
   const list=document.createElement('div');
   list.className='issue-list';
   for(const issue of data){
-    if(issue.pull_request)continue; // skip PRs masquerading as issues
+    if(issue.pull_request)continue;
     const item=document.createElement('div');
     item.className='issue-item';
-    item.addEventListener('click',()=>window.open(issue.html_url,'_blank'));
     const stateClass=issue.state==='open'?'open':'closed';
     const stateLabel=issue.state==='open'?'Open':'Closed';
     item.innerHTML=`
@@ -462,10 +500,60 @@ async function renderIssues(pane){
         <div class="issue-title">${escHtml(issue.title)} <span class="issue-state ${stateClass}">${stateLabel}</span></div>
         <div class="issue-meta">#${issue.number} by <strong>${escHtml(issue.user.login)}</strong> ${timeAgo(issue.created_at)}${issue.comments?` · ${issue.comments} comments`:''}</div>
       </div>
-      <span class="issue-number">#${issue.number}</span>
+      <span class="commit-expand">▶</span>
     `;
+    const detail=document.createElement('div');
+    detail.className='issue-detail';
+    detail.style.display='none';
+    item.addEventListener('click',async(e)=>{
+      if(e.target.closest('a'))return;
+      const expanded=detail.style.display!=='none';
+      if(expanded){detail.style.display='none';item.querySelector('.commit-expand').textContent='▶';return}
+      if(!detail._loaded){
+        detail.innerHTML='<div class="list-loading"><span class="spinner"></span>Loading issue…</div>';
+        try{
+          const [issueDetail, comments] = await Promise.all([
+            ghFetch(`${API}/repos/${state.owner}/${state.repo}/issues/${issue.number}`),
+            ghFetch(`${API}/repos/${state.owner}/${state.repo}/issues/${issue.number}/comments?per_page=20`)
+          ]);
+          detail._loaded=true;
+          let html='<div class="commit-detail-body">';
+          if(issueDetail.body)html+=`<div class="commit-desc">${escHtml(issueDetail.body.substring(0,5000))}</div>`;
+          if(issueDetail.labels && issueDetail.labels.length){
+            html+='<div class="issue-labels">';
+            for(const lbl of issueDetail.labels){
+              const bg=lbl.color?'#'+lbl.color:'var(--bg4)';
+              html+=`<span class="issue-label" style="background:${bg}20;color:${bg};border-color:${bg}40">${escHtml(lbl.name)}</span>`;
+            }
+            html+='</div>';
+          }
+          if(comments.length){
+            html+='<div class="issue-comments"><div class="comments-header">Comments ('+comments.length+')</div>';
+            for(const cm of comments){
+              const avatar=cm.user?.avatar_url?`<img class="commit-avatar" src="${cm.user.avatar_url}&s=40" alt="">`:'<div class="commit-avatar" style="background:var(--bg4);border-radius:50%"></div>';
+              html+=`<div class="comment-item">
+                ${avatar}
+                <div class="comment-body">
+                  <div class="comment-meta"><strong>${escHtml(cm.user.login)}</strong> commented ${timeAgo(cm.created_at)}</div>
+                  <div class="comment-text">${escHtml(cm.body.substring(0,2000))}</div>
+                </div>
+              </div>`;
+            }
+            html+='</div>';
+          }
+          html+='</div>';
+          detail.innerHTML=html;
+        }catch(e){detail.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`}
+      }
+      detail.style.display='block';
+      item.querySelector('.commit-expand').textContent='▼';
+    });
+    item.append(detail);
     list.append(item);
   }
+  pane.innerHTML='';
+  pane.append(list);
+}
   pane.innerHTML='';
   pane.append(list);
 }
