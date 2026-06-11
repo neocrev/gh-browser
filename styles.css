@@ -314,6 +314,46 @@ body{
 .readme th,.readme td{border:1px solid rgba(255,255,255,.08);padding:6px 10px;text-align:left}
 .readme th{background:rgba(255,255,255,.04)}
 
+/* ─── Activity ─── */
+.activity-wrapper{margin-bottom:14px;animation:fadeUp .25s ease}
+.activity-toggle{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);
+  padding:10px 14px;font-size:12px;color:var(--fg2);cursor:pointer;font-family:inherit;
+  transition:all .12s;text-align:left;
+}
+.activity-toggle:hover{border-color:rgba(126,203,139,.3);color:var(--fg)}
+.activity-toggle .activity-icon{display:flex;opacity:.65}
+.activity-toggle .activity-icon svg{width:14px;height:14px}
+.activity-toggle .activity-arrow{margin-left:auto;font-size:10px;color:var(--dim);transition:transform .15s}
+.activity-body{
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.06);border-top:none;
+  border-radius:0 0 var(--radius) var(--radius);
+  overflow:hidden;
+}
+.activity-loading,.activity-empty{padding:16px;text-align:center;font-size:12px;color:var(--dim)}
+.activity-item{
+  display:flex;align-items:flex-start;gap:10px;padding:8px 14px;
+  border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;
+}
+.activity-item:last-child{border-bottom:none}
+.activity-item .act-type{flex-shrink:0;width:18px;display:flex;justify-content:center;margin-top:1px}
+.activity-item .act-type svg{width:14px;height:14px}
+.activity-item .act-push svg{stroke:var(--blue)}
+.activity-item .act-issue svg{stroke:var(--green)}
+.activity-item .act-pr svg{stroke:var(--purple)}
+.activity-item .act-release svg{stroke:var(--orange)}
+.activity-item .act-star svg{stroke:var(--yellow)}
+.activity-item .act-branch svg{stroke:var(--cyan)}
+.activity-item .act-fork svg{stroke:var(--dim)}
+.activity-item .act-info{flex:1;min-width:0}
+.activity-item .act-desc{display:block;color:var(--fg2);line-height:1.4}
+.activity-item .act-desc strong{color:var(--fg);font-weight:600}
+.activity-item .act-meta{display:block;font-size:10px;color:var(--dim);margin-top:2px}
+.activity-item .act-meta strong{color:var(--fg2);font-weight:500}
+
 /* ─── Shortcuts help ─── */
 .shortcuts-overlay{
   position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);

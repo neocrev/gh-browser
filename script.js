@@ -265,8 +265,8 @@ async function renderContent(){
   root.innerHTML='';
   if(!state.path){
     await renderTree(root,'');
-    // Render README at repo root
     await renderReadme(root);
+    renderActivity(root);
     return;
   }
   const items=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/contents/${state.path}?ref=${state.branch}`);
@@ -333,6 +333,104 @@ async function renderReadme(root){
     });
     wrapper.after(toggleBtn);
   }
+}
+
+/* ─── Activity ─── */
+function renderActivity(root){
+  const wrapper=el('div',{class:'activity-wrapper'});
+  wrapper.innerHTML=`
+    <button class="activity-toggle">
+      <span class="activity-icon">${ICONS.calendar}</span>
+      Recent Activity
+      <span class="activity-arrow">▶</span>
+    </button>
+    <div class="activity-body" style="display:none"></div>
+  `;
+  root.append(wrapper);
+  const btn=wrapper.querySelector('.activity-toggle');
+  const body=wrapper.querySelector('.activity-body');
+  let loaded=false;
+  btn.addEventListener('click',async()=>{
+    if(body.style.display!=='none'){
+      body.style.display='none';
+      btn.querySelector('.activity-arrow').textContent='▶';
+      return;
+    }
+    body.style.display='block';
+    btn.querySelector('.activity-arrow').textContent='▼';
+    if(loaded)return;
+    loaded=true;
+    body.innerHTML='<div class="activity-loading">Loading…</div>';
+    try{
+      const events=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/events?per_page=15`);
+      if(!events.length){body.innerHTML='<div class="activity-empty">No recent activity.</div>';return}
+      body.innerHTML='';
+      for(const e of events){
+        const item=el('div',{class:'activity-item'});
+        const type=e.type.replace('Event','');
+        const login=e.actor.login;
+        const time=timeAgo(e.created_at);
+        let desc='';
+        if(type==='Push'){
+          const ref=e.payload.ref.replace('refs/heads/','');
+          const commits=e.payload.commits||[];
+          const msgs=commits.slice(0,3).map(c=>c.message.split('\n')[0]).join('; ');
+          desc=`Pushed to <strong>${ref}</strong>${msgs?`: ${msgs}`:''}${commits.length>3?` (+${commits.length-3} more)`:''}`;
+        }else if(type==='Create'){
+          desc=`Created <strong>${e.payload.ref_type}</strong> ${e.payload.ref||''}`;
+        }else if(type==='Delete'){
+          desc=`Deleted <strong>${e.payload.ref_type}</strong> ${e.payload.ref||''}`;
+        }else if(type==='Issues'){
+          const action=e.payload.action;
+          desc=`${action} issue <strong>#${e.payload.issue.number}</strong>: ${e.payload.issue.title}`;
+        }else if(type==='IssueComment'){
+          desc=`commented on issue <strong>#${e.payload.issue.number}</strong>`;
+        }else if(type==='PullRequest'){
+          const action=e.payload.action;
+          desc=`${action} PR <strong>#${e.payload.pull_request.number}</strong>: ${e.payload.pull_request.title}`;
+        }else if(type==='Release'){
+          desc=`published release <strong>${e.payload.release.tag_name}</strong>`;
+        }else if(type==='Fork'){
+          desc=`forked this repo to <strong>${e.payload.forkee.full_name}</strong>`;
+        }else if(type==='Watch'){
+          desc=`starred this repo`;
+        }else if(type==='Member'){
+          desc=`added <strong>${e.payload.member.login}</strong> as collaborator`;
+        }else{
+          desc=e.type;
+        }
+        if(type==='Push')item.innerHTML=`<span class="act-type act-push">${ICONS.left}</span>`;
+        else if(type==='Issues'||type==='IssueComment')item.innerHTML=`<span class="act-type act-issue">${ICONS.repo}</span>`;
+        else if(type==='PullRequest')item.innerHTML=`<span class="act-type act-pr">${ICONS.code}</span>`;
+        else if(type==='Release')item.innerHTML=`<span class="act-type act-release">${ICONS.download}</span>`;
+        else if(type==='Watch')item.innerHTML=`<span class="act-type act-star">${ICONS.star}</span>`;
+        else if(type==='Create'||type==='Delete')item.innerHTML=`<span class="act-type act-branch">${ICONS.gitBranch}</span>`;
+        else if(type==='Fork')item.innerHTML=`<span class="act-type act-fork">${ICONS.fork}</span>`;
+        else item.innerHTML=`<span class="act-type">${ICONS.calendar}</span>`;
+        const info=document.createElement('div');
+        info.className='act-info';
+        info.innerHTML=`<span class="act-desc">${desc}</span><span class="act-meta"><strong>${login}</strong> · ${time}</span>`;
+        item.append(info);
+        body.append(item);
+      }
+    }catch(e){
+      body.innerHTML=`<div class="activity-empty">Failed to load activity: ${e.message}</div>`;
+    }
+  });
+}
+
+function timeAgo(dateStr){
+  const diff=Date.now()-new Date(dateStr).getTime();
+  const mins=Math.floor(diff/60000);
+  if(mins<1)return 'just now';
+  if(mins<60)return `${mins}m ago`;
+  const hrs=Math.floor(mins/60);
+  if(hrs<24)return `${hrs}h ago`;
+  const days=Math.floor(hrs/24);
+  if(days<30)return `${days}d ago`;
+  const months=Math.floor(days/30);
+  if(months<12)return `${months}mo ago`;
+  return `${Math.floor(months/12)}y ago`;
 }
 
 /* ─── Tree ─── */
