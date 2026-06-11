@@ -1,0 +1,53 @@
+/* Data: trending repos, language colors, extension mapping */
+
+const TRENDING=[
+  {owner:'rust-lang',repo:'rust',desc:'Empowering everyone to build reliable and efficient software.',stars:'99k',lang:'Rust',color:'#dea584'},
+  {owner:'denoland',repo:'deno',desc:'A modern runtime for JavaScript and TypeScript.',stars:'97k',lang:'Rust',color:'#dea584'},
+  {owner:'oven-sh',repo:'bun',desc:'Incredibly fast JavaScript runtime, bundler, test runner, and package manager.',stars:'75k',lang:'Zig',color:'#ec915c'},
+  {owner:'microsoft',repo:'vscode',desc:'Visual Studio Code — Open Source GUI editor.',stars:'165k',lang:'TypeScript',color:'#3178c6'},
+  {owner:'neovim',repo:'neovim',desc:'Hyperextensible Vim-based text editor.',stars:'84k',lang:'Vim Script',color:'#199f4b'},
+  {owner:'zed-industries',repo:'zed',desc:'High-performance, multiplayer code editor.',stars:'53k',lang:'Rust',color:'#dea584'},
+  {owner:'astral-sh',repo:'ruff',desc:'An extremely fast Python linter and code formatter, written in Rust.',stars:'35k',lang:'Rust',color:'#dea584'},
+  {owner:'astral-sh',repo:'uv',desc:'An extremely fast Python package and project manager.',stars:'40k',lang:'Rust',color:'#dea584'},
+  {owner:'tensorflow',repo:'tensorflow',desc:'An Open Source Machine Learning Framework for everyone.',stars:'188k',lang:'Python',color:'#3572a5'},
+  {owner:'facebook',repo:'react',desc:'A declarative, efficient, and flexible JavaScript library for building user interfaces.',stars:'232k',lang:'JavaScript',color:'#f1e05a'},
+  {owner:'curl',repo:'curl',desc:'A command line tool and library for transferring data with URL syntax.',stars:'36k',lang:'C',color:'#555'},
+  {owner:'yt-dlp',repo:'yt-dlp',desc:'A feature-rich command-line audio/video downloader.',stars:'95k',lang:'Python',color:'#3572a5'},
+  {owner:'FFmpeg',repo:'FFmpeg',desc:'A complete solution to record, convert and stream audio and video.',stars:'47k',lang:'C',color:'#555'},
+  {owner:'sharkdp',repo:'bat',desc:'A cat(1) clone with wings (syntax highlighting and Git integration).',stars:'51k',lang:'Rust',color:'#dea584'},
+  {owner:'sharkdp',repo:'fd',desc:'A simple, fast alternative to find.',stars:'35k',lang:'Rust',color:'#dea584'},
+  {owner:'BurntSushi',repo:'ripgrep',desc:'ripgrep is a line-oriented search tool that recursively searches your current directory.',stars:'50k',lang:'Rust',color:'#dea584'},
+  {owner:'nushell',repo:'nushell',desc:'A new type of shell for the 21st century in Rust.',stars:'34k',lang:'Rust',color:'#dea584'},
+  {owner:'fish-shell',repo:'fish-shell',desc:'The user-friendly command line shell.',stars:'27k',lang:'Rust',color:'#dea584'},
+  {owner:'zellij-org',repo:'zellij',desc:'A terminal workspace with batteries included.',stars:'22k',lang:'Rust',color:'#dea584'},
+  {owner:'sxyazi',repo:'yazi',desc:'Blazing fast terminal file manager written in Rust.',stars:'18k',lang:'Rust',color:'#dea584'},
+  {owner:'jgraph',repo:'drawio',desc:'draw.io is a JavaScript client-side editor for general diagramming.',stars:'42k',lang:'JavaScript',color:'#f1e05a'},
+  {owner:'typst',repo:'typst',desc:'A new markup-based typesetting system that is powerful and easy to learn.',stars:'36k',lang:'Rust',color:'#dea584'},
+  {owner:'LazyVim',repo:'LazyVim',desc:'Neovim setup for lazy and power users.',stars:'17k',lang:'Lua',color:'#000080'},
+  {owner:'helix-editor',repo:'helix',desc:'A post-modern modal text editor in Rust.',stars:'35k',lang:'Rust',color:'#dea584'},
+  {owner:'lapce',repo:'lapce',desc:'Lightning-fast and Powerful Code Editor written in Rust.',stars:'34k',lang:'Rust',color:'#dea584'},
+  {owner:'nixos',repo:'nixpkgs',desc:'NixOS — the purely functional Linux distribution.',stars:'19k',lang:'Nix',color:'#7eb7da'},
+  {owner:'git',repo:'git',desc:'Distributed version control system.',stars:'53k',lang:'C',color:'#555'},
+  {owner:'org-rs',repo:'org-rs',desc:'Org mode parser for Rust.',stars:'1k',lang:'Rust',color:'#dea584'},
+  {owner:'emacs-mirror',repo:'emacs',desc:'GNU Emacs — extensible, customizable, self-documenting.',stars:'4.8k',lang:'Emacs Lisp',color:'#c065db'},
+];
+
+const LANG_COLORS={
+  'Python':'#3572a5','JavaScript':'#f1e05a','TypeScript':'#3178c6','Rust':'#dea584',
+  'Go':'#00add8','Java':'#b07219','C':'#555','C++':'#f34b7d','C#':'#178600',
+  'Ruby':'#701516','PHP':'#4f5d95','Shell':'#89e051','Lua':'#000080','Zig':'#ec915c',
+  'Vim Script':'#199f4b','Nix':'#7eb7da','Emacs Lisp':'#c065db',
+};
+
+function extToLang(ext){
+  const m={
+    py:'python',js:'javascript',ts:'typescript',rs:'rust',go:'go',c:'c',cpp:'cpp',h:'c',hpp:'cpp',
+    java:'java',rb:'ruby',php:'php',swift:'swift',kt:'kotlin',scala:'scala',m:'objectivec',mm:'objectivec',
+    sh:'bash',bash:'bash',zsh:'bash',fish:'bash',pl:'perl',lua:'lua',r:'r',sql:'sql',
+    css:'css',scss:'scss',less:'less',html:'xml',htm:'xml',xml:'xml',svg:'xml',
+    yaml:'yaml',yml:'yaml',json:'json',toml:'ini',ini:'ini',cfg:'ini',conf:'ini',
+    md:'markdown',rst:'rst',txt:'plaintext','':null,
+    dockerfile:'dockerfile',makefile:'makefile','gitignore':'plaintext',env:'plaintext',
+  };
+  return m[ext]||null;
+}
