@@ -226,13 +226,13 @@ function switchTab(tab){
   const content=qs('#content');
   if(tab==='files'){
     content.style.display='block';
-    ['commits','prs','issues'].forEach(t=>{
+    ['commits','prs','issues','releases'].forEach(t=>{
       const p=qs(`#tab-${t}`);
       if(p)p.classList.remove('active');
     });
   }else{
     content.style.display='none';
-    ['commits','prs','issues'].forEach(t=>{
+    ['commits','prs','issues','releases'].forEach(t=>{
       const p=qs(`#tab-${t}`);
       if(p)p.classList.toggle('active',t===tab);
     });
@@ -249,6 +249,7 @@ async function renderTabContent(tab){
     if(tab==='commits')await renderCommits(pane);
     else if(tab==='prs')await renderPRs(pane);
     else if(tab==='issues')await renderIssues(pane);
+    else if(tab==='releases')await renderReleases(pane);
   }catch(e){
     pane.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`;
   }
@@ -274,7 +275,7 @@ function renderTabs(){
   tb.style.display='flex';
   // Create panes for non-files tabs
   const content=qs('#content');
-  ['commits','prs','issues'].forEach(t=>{
+  ['commits','prs','issues','releases'].forEach(t=>{
     if(!qs(`#tab-${t}`)){
       const pane=document.createElement('div');
       pane.id=`tab-${t}`;
@@ -290,7 +291,7 @@ function renderTabs(){
   }
   // Apply active state
   tb.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab));
-  ['commits','prs','issues'].forEach(t=>{
+  ['commits','prs','issues','releases'].forEach(t=>{
     const p=qs(`#tab-${t}`);
     if(p)p.classList.toggle('active',activeTab===t);
   });
@@ -554,6 +555,57 @@ async function renderIssues(pane){
   pane.innerHTML='';
   pane.append(list);
 }
+
+/* ─── Releases tab ─── */
+async function renderReleases(pane){
+  const data=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/releases?per_page=30`);
+  if(!data.length){pane.innerHTML='<div class="list-empty">No releases found.</div>';return}
+  const list=document.createElement('div');
+  list.className='issue-list';
+  for(const r of data){
+    const item=document.createElement('div');
+    item.className='issue-item';
+    const isPrerelease=r.prerelease?'<span class="pr-state merged" style="margin-left:6px">Pre-release</span>':'';
+    item.innerHTML=`
+      <span class="issue-icon" style="color:var(--purple)">${ICONS.download}</span>
+      <div class="issue-body">
+        <div class="issue-title">${escHtml(r.tag_name)} ${isPrerelease}</div>
+        <div class="issue-meta"><strong>${escHtml(r.author.login)}</strong> released ${timeAgo(r.created_at)}${r.name?` · ${escHtml(r.name)}`:''}</div>
+      </div>
+      <span class="commit-expand">▶</span>
+    `;
+    const detail=document.createElement('div');
+    detail.className='issue-detail';
+    detail.style.display='none';
+    item.addEventListener('click',async(e)=>{
+      if(e.target.closest('a'))return;
+      const expanded=detail.style.display!=='none';
+      if(expanded){detail.style.display='none';item.querySelector('.commit-expand').textContent='▶';return}
+      if(!detail._loaded){
+        detail._loaded=true;
+        let html='<div class="commit-detail-body">';
+        if(r.body)html+=`<div class="commit-desc">${escHtml(r.body.substring(0,5000))}</div>`;
+        if(r.assets && r.assets.length){
+          html+='<div class="commit-files">';
+          for(const a of r.assets){
+            html+=`<div class="commit-file">
+              <span class="file-status file-added">ZIP</span>
+              <span class="file-path">${escHtml(a.name)}</span>
+              <span class="file-stats">${humanSize(a.size)}</span>
+              <a href="${a.browser_download_url}" target="_blank" style="color:var(--blue);text-decoration:none;font-size:10px;flex-shrink:0">Download</a>
+            </div>`;
+          }
+          html+='</div>';
+        }
+        html+='</div>';
+        detail.innerHTML=html;
+      }
+      detail.style.display='block';
+      item.querySelector('.commit-expand').textContent='▼';
+    });
+    item.append(detail);
+    list.append(item);
+  }
   pane.innerHTML='';
   pane.append(list);
 }
