@@ -995,8 +995,21 @@ function renderFilePreview(root,item){
       <span class="size">${humanSize(item.size)}</span>
       <a href="${ghUrl}" target="_blank" class="dl-btn" title="Open on GitHub">GitHub</a>
       <a href="${item.download_url}" target="_blank" class="dl-btn" download>Download</a>
+      <button class="dl-btn" id="copyContentBtn" title="Copy file content">Copy</button>
     </div>
   `;
+  preview.querySelector('#copyContentBtn').addEventListener('click', async () => {
+    try {
+      const r = await fetch(item.download_url);
+      const text = await r.text();
+      await navigator.clipboard.writeText(text);
+      const btn = preview.querySelector('#copyContentBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    } catch(e) {
+      setStatus('Failed to copy: ' + e.message, 'error');
+    }
+  });
 
   if(isBinary||ext==='svg'||ext==='woff'||ext==='woff2'||ext==='ttf'||ext==='eot'){
     const note=el('div',{class:'binary-note'});
