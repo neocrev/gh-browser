@@ -226,13 +226,13 @@ function switchTab(tab){
   const content=qs('#content');
   if(tab==='files'){
     content.style.display='block';
-    ['commits','prs','issues','releases'].forEach(t=>{
+    ['commits','prs','issues','releases','search'].forEach(t=>{
       const p=qs(`#tab-${t}`);
       if(p)p.classList.remove('active');
     });
   }else{
     content.style.display='none';
-    ['commits','prs','issues','releases'].forEach(t=>{
+    ['commits','prs','issues','releases','search'].forEach(t=>{
       const p=qs(`#tab-${t}`);
       if(p)p.classList.toggle('active',t===tab);
     });
@@ -250,6 +250,7 @@ async function renderTabContent(tab){
     else if(tab==='prs')await renderPRs(pane);
     else if(tab==='issues')await renderIssues(pane);
     else if(tab==='releases')await renderReleases(pane);
+    else if(tab==='search')renderSearchPane(pane);
   }catch(e){
     pane.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`;
   }
@@ -275,7 +276,7 @@ function renderTabs(){
   tb.style.display='flex';
   // Create panes for non-files tabs
   const content=qs('#content');
-  ['commits','prs','issues','releases'].forEach(t=>{
+  ['commits','prs','issues','releases','search'].forEach(t=>{
     if(!qs(`#tab-${t}`)){
       const pane=document.createElement('div');
       pane.id=`tab-${t}`;
@@ -291,7 +292,7 @@ function renderTabs(){
   }
   // Apply active state
   tb.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab));
-  ['commits','prs','issues','releases'].forEach(t=>{
+  ['commits','prs','issues','releases','search'].forEach(t=>{
     const p=qs(`#tab-${t}`);
     if(p)p.classList.toggle('active',activeTab===t);
   });
@@ -608,6 +609,79 @@ async function renderReleases(pane){
   }
   pane.innerHTML='';
   pane.append(list);
+}
+
+/* ─── Search tab ─── */
+function renderSearchPane(pane){
+  pane.innerHTML=`
+    <div class="search-container" style="padding:16px;height:100%;display:flex;flex-direction:column">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input type="text" id="searchQuery" placeholder="Search code in ${escHtml(state.repo)}..." style="flex:1;background:#0f0f1a;border:1px solid #24253a;border-radius:6px;color:#c0caf5;padding:10px 14px;font-size:14px" autofocus>
+        <select id="searchLang" style="background:#0f0f1a;border:1px solid #24253a;border-radius:6px;color:#c0caf5;padding:8px;font-size:13px">
+          <option value="">All languages</option>
+          <option>JavaScript</option><option>TypeScript</option><option>Python</option><option>Go</option>
+          <option>Rust</option><option>Ruby</option><option>Java</option><option>C</option><option>C++</option>
+          <option>CSS</option><option>HTML</option><option>Shell</option><option>Markdown</option>
+          <option>JSON</option><option>YAML</option><option>Dockerfile</option><option>Makefile</option>
+        </select>
+        <button class="btn btn-primary" onclick="doSearch()">Search</button>
+      </div>
+      <div id="searchMeta" style="font-size:12px;color:#565f89;margin-bottom:8px"></div>
+      <div id="searchResults" style="flex:1;overflow-y:auto"></div>
+    </div>
+  `;
+  pane.querySelector('#searchQuery').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+}
+
+async function doSearch(){
+  const q=document.getElementById('searchQuery')?.value?.trim();
+  if(!q)return;
+  const lang=document.getElementById('searchLang')?.value||'';
+  const results=document.getElementById('searchResults');
+  const meta=document.getElementById('searchMeta');
+  if(!results)return;
+  results.innerHTML='<div class="list-loading"><span class="spinner"></span>Searching&hellip;</div>';
+  if(meta)meta.textContent='';
+  let query=`${q}+repo:${state.owner}/${state.repo}`;
+  if(lang)query+=`+language:${lang}`;
+  try{
+    const data=await ghFetch(`${API}/search/code?q=${encodeURIComponent(query)}&per_page=30`);
+    if(!data.items||!data.items.length){
+      results.innerHTML='<div class="list-empty">No results found.</div>';
+      if(meta)meta.textContent='0 results';
+      return;
+    }
+    if(meta)meta.textContent=`${data.total_count} result${data.total_count!==1?'s':''}`;
+    const list=document.createElement('div');
+    list.className='issue-list';
+    for(const item of data.items){
+      const div=document.createElement('div');
+      div.className='issue-item';
+      const icon=fileIcon(item.name);
+      const pathHtml=item.path.split('/').map((p,i,a)=>i<a.length-1?`<span style="color:#565f89">${escHtml(p)}</span>`:`<strong>${escHtml(p)}</strong>`).join('<span style="color:#414868">/</span>');
+      div.innerHTML=`
+        <span class="issue-icon" style="color:var(--blue)">${icon}</span>
+        <div class="issue-body">
+          <div class="issue-title">${pathHtml}</div>
+          <div class="issue-meta"><a href="${item.html_url}" target="_blank">${escHtml(item.path)}</a></div>
+        </div>
+      `;
+      div.addEventListener('click',()=>viewSearchFile(item));
+      list.append(div);
+    }
+    results.innerHTML='';
+    results.append(list);
+  }catch(e){
+    results.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`;
+    if(meta)meta.textContent='';
+  }
+}
+
+async function viewSearchFile(item){
+  state.path=item.path;
+  state.branch=state.branch||repoData.default_branch;
+  switchTab('files');
+  render();
 }
 
 function escHtml(s){
