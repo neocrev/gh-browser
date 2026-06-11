@@ -542,6 +542,28 @@ async function downloadFolder(items,path){
 }
 
 /* ─── Recent repos ─── */
+
+const SAD_RABBIT=`<svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="60" cy="80" rx="38" ry="16" fill="#1c1d2b" stroke="#262840" stroke-width="1.5"/>
+  <ellipse cx="60" cy="62" rx="24" ry="22" fill="#1f2233" stroke="#24283b" stroke-width="1.5"/>
+  <ellipse cx="60" cy="50" rx="18" ry="14" fill="#24283b" stroke="#262840" stroke-width="1"/>
+  <ellipse cx="43" cy="32" rx="10" ry="18" fill="#1f2233" stroke="#24283b" stroke-width="1.5" transform="rotate(-15,43,32)"/>
+  <ellipse cx="77" cy="32" rx="10" ry="18" fill="#1f2233" stroke="#24283b" stroke-width="1.5" transform="rotate(15,77,32)"/>
+  <ellipse cx="41" cy="26" rx="6" ry="12" fill="#1c1d2b" stroke="#262840" stroke-width="1" transform="rotate(-10,41,26)"/>
+  <ellipse cx="79" cy="26" rx="6" ry="12" fill="#1c1d2b" stroke="#262840" stroke-width="1" transform="rotate(10,79,26)"/>
+  <circle cx="46" cy="48" r="3" fill="#c0caf5" opacity=".8"/>
+  <circle cx="74" cy="48" r="3" fill="#c0caf5" opacity=".8"/>
+  <circle cx="46" cy="48" r="1.5" fill="#1f2233"/>
+  <circle cx="74" cy="48" r="1.5" fill="#1f2233"/>
+  <ellipse cx="53" cy="55" rx="2.5" ry="1.2" fill="#f7768e" opacity=".5"/>
+  <ellipse cx="67" cy="55" rx="2.5" ry="1.2" fill="#f7768e" opacity=".5"/>
+  <path d="M57 57 Q60 59 63 57" stroke="#51587a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <circle cx="28" cy="52" r="2" fill="#7ecb8b" opacity=".4"/>
+  <circle cx="92" cy="52" r="2" fill="#7ecb8b" opacity=".4"/>
+  <circle cx="25" cy="50" r="1" fill="#7aa2f7" opacity=".3"/>
+  <circle cx="95" cy="50" r="1" fill="#7aa2f7" opacity=".3"/>
+</svg>`;
+
 function saveRecent(name){
   let list=storage('recent')||[];
   list=list.filter(r=>r!==name);
@@ -562,7 +584,15 @@ function renderRecent(){
   const list=storage('recent')||[];
   const el=qs('#recent-tags');
   if(!el)return;
-  if(!list.length){el.innerHTML='';return}
+  if(!list.length){
+    el.innerHTML=`
+      <div class="empty-recent">
+        ${SAD_RABBIT}
+        <p>Nothing here yet.</p>
+      </div>
+    `;
+    return;
+  }
   el.innerHTML=list.map(r=>`<span class="tag"><span class="rm" data-name="${r}">✕</span>${r}</span>`).join('');
   el.querySelectorAll('.tag').forEach(t=>{
     t.addEventListener('click',e=>{
