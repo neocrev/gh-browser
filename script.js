@@ -1,25 +1,19 @@
-/* ============================================================
-   gh-browser — GitHub repository browser
-   ============================================================ */
+/* gh-browser — GitHub repository browser */
+const API='https://api.github.com';
+const RAW='https://raw.githubusercontent.com';
 
-const API = 'https://api.github.com';
-const RAW = 'https://raw.githubusercontent.com';
-const GB = 1024**3; const MB = 1024**2; const KB = 1024;
-
-/* ─── Utilities ─── */
 function qs(s){return document.querySelector(s)}
 function qsa(s){return document.querySelectorAll(s)}
 function el(t,a,...c){let e=document.createElement(t);for(let k in a)e.setAttribute(k,a[k]);c.forEach(ch=>e.append(ch));return e}
 
 function humanSize(n){
-  if(!n||n<0)return '?'; n=+n;
+  if(!n||n<0)n=0;n=+n;
   for(const u of['B','KB','MB','GB','TB']){if(n<1024)return u==='B'?`${n} B`:`${n.toFixed(1)} ${u}`;n/=1024}
   return `${n.toFixed(1)} TB`;
 }
 
 function storage(k,v){if(v!==void 0){localStorage.setItem('ghb_'+k,JSON.stringify(v));return}v=localStorage.getItem('ghb_'+k);try{return JSON.parse(v)}catch{return v||null}}
 
-/* ─── SVG icons (inline) ─── */
 const ICONS={
   folder:`<svg viewBox="0 0 24 24" fill="none" stroke="#89a0c2" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-7.5L9.87 4.13A1 1 0 0 0 9.17 4H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1z"/></svg>`,
   file:`<svg viewBox="0 0 24 24" fill="none" stroke="#c0caf5" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a1 1 0 0 0-1 1v18a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 2v6h6"/></svg>`,
@@ -34,14 +28,13 @@ const ICONS={
   repo:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>`,
   download:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
   left:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`,
-  history:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-  org:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
   people:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
   calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  gitBranch:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>`,
 };
 
 function fileIcon(name){
-  const ext = name.split('.').pop().toLowerCase();
+  const ext=name.split('.').pop().toLowerCase();
   if(!ext||name==='')return ICONS.file;
   if(['jpg','jpeg','png','gif','webp','svg','bmp','ico','avif','heic','tiff'].includes(ext))return ICONS.image;
   if(['mp3','flac','ogg','wav','aac','m4a','opus','wma'].includes(ext))return ICONS.audio;
@@ -55,8 +48,9 @@ function fileIcon(name){
 /* ─── State ─── */
 let state={owner:'',repo:'',branch:'',path:''};
 let repoData=null;
+let branchesCache=[];
+let readmeRendered=false;
 
-/* ─── DOM refs ─── */
 const inp=qs('#gh-input');
 const goBtn=qs('#gh-go');
 const statusEl=qs('#status');
@@ -93,14 +87,10 @@ async function loadRepo(input){
   input=input.trim().replace(/https?:\/\/github\.com\//,'').replace(/\/$/,'');
   const acEl=qs('#ac-list');
   if(acEl)acEl.classList.remove('open');
-  // Handle repo: and user: prefixes
   if(input.startsWith('repo:')){input=input.slice(5);const p=input.split('/');if(p.length>=2){const [o,r]=p;return loadSpecificRepo(o,r)}}
   if(input.startsWith('user:')){return loadUserRepos(input.slice(5))}
   const parts=input.split('/');
-  if(parts.length===1){
-    await loadUserRepos(parts[0]);
-    return;
-  }
+  if(parts.length===1){await loadUserRepos(parts[0]);return}
   const [owner,repoName]=parts;
   loadSpecificRepo(owner,repoName);
 }
@@ -112,6 +102,8 @@ async function loadSpecificRepo(owner,repoName){
     const repo=await ghFetch(`${API}/repos/${owner}/${repoName}`);
     repoData=repo;
     state={owner,repo:repoName,branch:repo.default_branch,path:''};
+    branchesCache=[];
+    readmeRendered=false;
     saveRecent(`${owner}/${repoName}`);
     setStatus('','');
     render();
@@ -188,6 +180,39 @@ async function navigate(path){
   try{render()}catch(e){setStatus(`Error: ${e.message}`,'error')}
 }
 
+/* ─── Branch switcher ─── */
+async function renderBranchSwitcher(){
+  const bar=qs('#branch-bar');
+  if(!bar||!repoData)return;
+  if(!branchesCache.length){
+    try{
+      branchesCache=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/branches?per_page=100`);
+    }catch(e){branchesCache=[{name:repoData.default_branch}]}
+  }
+  bar.style.display='flex';
+  bar.innerHTML=`${ICONS.gitBranch} <span id="branch-label">${state.branch}</span>`;
+  if(branchesCache.length>1){
+    const sel=el('select',{id:'branch-select'});
+    for(const b of branchesCache){
+      const opt=el('option',{value:b.name});
+      opt.textContent=b.name;
+      if(b.name===state.branch)opt.selected=true;
+      sel.append(opt);
+    }
+    bar.append(sel);
+    sel.addEventListener('change',async()=>{
+      state.branch=sel.value;
+      state.path='';
+      readmeRendered=false;
+      setStatus('Switching branch…','loading');
+      try{
+        render();
+        setStatus('','');
+      }catch(e){setStatus(`Error: ${e.message}`,'error')}
+    });
+  }
+}
+
 /* ─── Render ─── */
 function render(){
   updateRateInfo();
@@ -195,6 +220,7 @@ function render(){
   const recEl=qs('#recent');
   if(sugEl)sugEl.style.display='none';
   if(recEl)recEl.style.display='none';
+  renderBranchSwitcher();
   renderRepoHeader();
   renderBreadcrumb();
   renderContent();
@@ -221,7 +247,7 @@ function renderBreadcrumb(){
   let html=`<a data-path="">${state.repo}</a>`;
   let acc='';
   for(let i=0;i<parts.length;i++){
-    acc+=(i? '/' :'')+parts[i];
+    acc+=(i?'/':'')+parts[i];
     const name=parts[i];
     if(i===parts.length-1)html+=`<span class="sep">/</span><span class="current">${name}</span>`;
     else html+=`<span class="sep">/</span><a data-path="${acc}">${name}</a>`;
@@ -230,11 +256,14 @@ function renderBreadcrumb(){
   el.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navigate(a.dataset.path)));
 }
 
+/* ─── Content ─── */
 async function renderContent(){
   const root=qs('#content');
   root.innerHTML='';
   if(!state.path){
     await renderTree(root,'');
+    // Render README at repo root
+    await renderReadme(root);
     return;
   }
   const items=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/contents/${state.path}?ref=${state.branch}`);
@@ -246,6 +275,55 @@ async function renderContent(){
   }
 }
 
+/* ─── README rendering ─── */
+async function renderReadme(root){
+  if(readmeRendered)return;
+  // Try common README filenames
+  const candidates=['README.md','README','Readme.md','readme.md','README.rst','README.txt'];
+  let content=null;
+  let name='';
+  for(const c of candidates){
+    try{
+      const r=await fetch(`${RAW}/${state.owner}/${state.repo}/${state.branch}/${c}`);
+      if(r.ok){content=await r.text();name=c;break}
+    }catch(e){}
+  }
+  if(!content)return;
+  readmeRendered=true;
+  const wrapper=el('div',{class:'readme'});
+  const ext=name.split('.').pop().toLowerCase();
+  if(ext==='md'){
+    if(typeof marked==='undefined'){
+      // Load marked from CDN
+      try{
+        await new Promise((res,rej)=>{
+          const s=document.createElement('script');
+          s.src='https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+          s.onload=res;s.onerror=rej;
+          document.head.append(s);
+        });
+      }catch(e){
+        wrapper.textContent=content.substring(0,2000);
+        root.prepend(wrapper);
+        return;
+      }
+    }
+    try{
+      wrapper.innerHTML=marked.parse(content);
+      // Make links open in new tab
+      wrapper.querySelectorAll('a').forEach(a=>{if(!a.href.startsWith('#'))a.target='_blank'});
+      // Sanitize: remove potentially dangerous HTML
+      wrapper.querySelectorAll('script,iframe,style').forEach(e=>e.remove());
+    }catch(e){
+      wrapper.textContent=content.substring(0,2000);
+    }
+  }else{
+    wrapper.innerHTML=`<pre style="white-space:pre-wrap;font-size:12px">${content.substring(0,5000)}</pre>`;
+  }
+  root.prepend(wrapper);
+}
+
+/* ─── Tree ─── */
 async function renderTree(root,path,prefetched){
   const items=prefetched||await ghFetch(`${API}/repos/${state.owner}/${state.repo}/contents/${path}?ref=${state.branch}`);
   if(!Array.isArray(items))return;
@@ -263,9 +341,22 @@ async function renderTree(root,path,prefetched){
     const icon=item.type==='dir'?ICONS.folder:fileIcon(item.name);
     const dl=item.type==='file'?`<a href="${item.download_url}" target="_blank" download>${ICONS.download}</a>`:'';
     const itemPath=path?`${path}/${item.name}`:item.name;
-    row.innerHTML=`<div class="name">${icon}<span>${item.name}</span></div><div class="size">${item.type==='file'?humanSize(item.size):'-'}</div><div class="dl">${dl}</div>`;
-    if(item.type==='dir')row.addEventListener('click',()=>navigate(itemPath));
-    else row.addEventListener('click',()=>openFile(itemPath));
+    const toggle=item.type==='dir'
+      ?`<span class="toggle-dir">▶</span>`
+      :'';
+    row.innerHTML=`<div class="name">${toggle}${icon}<span>${item.name}</span></div><div class="size">${item.type==='file'?humanSize(item.size):'-'}</div><div class="dl">${dl}</div>`;
+    if(item.type==='dir'){
+      row.addEventListener('click',e=>{
+        if(e.target.closest('.toggle-dir')){
+          e.stopPropagation();
+          toggleDir(row,itemPath);
+        }else{
+          navigate(itemPath);
+        }
+      });
+    }else{
+      row.addEventListener('click',()=>openFile(itemPath));
+    }
     body.append(row);
   }
   tree.append(body);
@@ -277,6 +368,52 @@ async function renderTree(root,path,prefetched){
       r.style.display=r.dataset.name.includes(q)?'':'none';
     });
   });
+}
+
+/* ─── Inline folder expand ─── */
+async function toggleDir(row,itemPath){
+  const toggle=row.querySelector('.toggle-dir');
+  const existingSub=row.nextElementSibling;
+  if(existingSub&&existingSub.classList.contains('file-subtree')){
+    // Collapse
+    existingSub.remove();
+    if(toggle)toggle.classList.remove('open');
+    return;
+  }
+  if(toggle)toggle.classList.add('open');
+  setStatus('Loading…','loading');
+  try{
+    const items=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/contents/${itemPath}?ref=${state.branch}`);
+    if(!Array.isArray(items)){setStatus('','');return}
+    const subTree=el('div',{class:'file-subtree'});
+    subTree.style.cssText='padding-left:18px;border-left:1px solid rgba(255,255,255,.05);margin-left:14px';
+    const sorted=[...items].sort((a,b)=>{
+      if(a.type!==b.type)return a.type==='dir'?-1:1;
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
+    for(const item of sorted){
+      const r=el('div',{class:'file-item',dataset:item.name.toLowerCase()});
+      const icon=item.type==='dir'?ICONS.folder:fileIcon(item.name);
+      const dl=item.type==='file'?`<a href="${item.download_url}" target="_blank" download>${ICONS.download}</a>`:'';
+      const subPath=`${itemPath}/${item.name}`;
+      const toggleBtn=item.type==='dir'?'<span class="toggle-dir">▶</span>':'';
+      r.innerHTML=`<div class="name">${toggleBtn}${icon}<span>${item.name}</span></div><div class="size">${item.type==='file'?humanSize(item.size):'-'}</div><div class="dl">${dl}</div>`;
+      if(item.type==='dir'){
+        r.addEventListener('click',e=>{
+          if(e.target.closest('.toggle-dir')){e.stopPropagation();toggleDir(r,subPath)}
+          else navigate(subPath);
+        });
+      }else{
+        r.addEventListener('click',()=>openFile(subPath));
+      }
+      subTree.append(r);
+    }
+    row.after(subTree);
+    setStatus('','');
+  }catch(e){
+    if(toggle)toggle.classList.remove('open');
+    setStatus(`Error: ${e.message}`,'error');
+  }
 }
 
 function renderFolderActions(root,items){
@@ -357,7 +494,6 @@ async function downloadFolder(items,path){
   btn.textContent='Preparing…';
   try{
     if(typeof JSZip==='undefined'){
-      // Load JSZip dynamically
       await new Promise((res,rej)=>{
         const s=document.createElement('script');
         s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
@@ -476,6 +612,27 @@ function setStatus(msg,type){
   }
 }
 
+/* ─── Keyboard shortcuts ─── */
+function showShortcuts(){
+  const existing=qs('.shortcuts-overlay');
+  if(existing){existing.remove();return}
+  const overlay=el('div',{class:'shortcuts-overlay'});
+  overlay.innerHTML=`
+    <div class="shortcuts-box">
+      <h3>Keyboard Shortcuts</h3>
+      <div class="row"><span class="key">?</span> <span class="desc">Toggle this help</span></div>
+      <div class="row"><span class="key">g</span> <span class="desc">Return to repo root / home</span></div>
+      <div class="row"><span class="key">t</span> <span class="desc">Focus file search</span></div>
+      <div class="row"><span class="key">/</span> <span class="desc">Focus repo input</span></div>
+      <div class="row"><span class="key">Esc</span> <span class="desc">Close help / blur input</span></div>
+      <button class="close-btn">Close</button>
+    </div>
+  `;
+  document.body.append(overlay);
+  overlay.querySelector('.close-btn').addEventListener('click',()=>overlay.remove());
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+}
+
 /* ─── Init ─── */
 document.addEventListener('DOMContentLoaded',()=>{
   renderRecent();
@@ -483,7 +640,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   goBtn.addEventListener('click',()=>loadRepo(inp.value));
   inp.focus();
 
-  // Autocomplete + Enter handling
+  /* Autocomplete */
   const acEl=qs('#ac-list');
   let acIdx=-1;
   inp.addEventListener('input',()=>{
@@ -491,8 +648,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(!v){acEl.classList.remove('open');acEl.innerHTML='';return}
     const recent=storage('recent')||[];
     const all=[...recent.map(r=>({label:r,type:'recent'})),...TRENDING.map(r=>({label:`${r.owner}/${r.repo}`,type:'trending'}))];
-    const unique=[];
-    const seen=new Set();
+    const unique=[];const seen=new Set();
     for(const item of all){if(!seen.has(item.label)){seen.add(item.label);unique.push(item)}}
     const matches=unique.filter(x=>x.label.toLowerCase().includes(v)).slice(0,8);
     if(!matches.length){acEl.classList.remove('open');acEl.innerHTML='';return}
@@ -520,7 +676,44 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap')&&!e.target.closest('#gh-input'))acEl.classList.remove('open')});
 
-  // Load from URL params
+  /* Keyboard shortcuts (global) */
+  let gPressed=false;
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){
+      // Allow Esc to blur inputs
+      if(e.key==='Escape'){e.target.blur();acEl.classList.remove('open')}
+      return;
+    }
+    if(e.key==='?'){
+      e.preventDefault();
+      showShortcuts();
+      return;
+    }
+    if(e.key==='g'&&!gPressed){gPressed=true;return}
+    // Single key shortcuts
+    if(e.key==='t'){
+      const fs=qs('.file-search');
+      if(fs){e.preventDefault();fs.focus()}
+    }
+    if(e.key==='/'){
+      e.preventDefault();
+      inp.focus();
+    }
+  });
+  document.addEventListener('keyup',e=>{
+    if(e.key==='g'){
+      if(gPressed){
+        // Navigate to root
+        if(repoData&&state.path!=='')navigate('');
+        else if(!repoData)inp.focus();
+        gPressed=false;
+      }
+    }else{
+      gPressed=false;
+    }
+  });
+
+  /* Load from URL params */
   const p=new URLSearchParams(location.search);
   if(p.get('repo'))loadRepo(p.get('repo'));
 });
