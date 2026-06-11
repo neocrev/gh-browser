@@ -200,6 +200,108 @@ body{
 }
 .readme-toggle:hover{background:var(--bg4);color:var(--fg)}
 
+/* ─── Tab bar ─── */
+.tab-bar{
+  display:flex;gap:4px;margin-bottom:10px;padding:2px;
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);
+  animation:fadeUp .25s ease;
+}
+.tab-bar .tab{
+  flex:1;background:transparent;border:none;border-radius:calc(var(--radius) - 3px);
+  padding:8px 12px;font-size:12px;font-weight:500;color:var(--dim);cursor:pointer;
+  font-family:inherit;transition:all .15s;text-align:center;
+}
+.tab-bar .tab:hover{color:var(--fg2);background:rgba(255,255,255,.04)}
+.tab-bar .tab.active{color:var(--fg);background:rgba(126,203,139,.12);font-weight:600}
+.tab-content{display:none;animation:fadeUp .25s ease}
+.tab-content.active{display:block}
+
+/* ─── Commits / PRs / Issues lists ─── */
+.commit-list,.pr-list,.issue-list{
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);
+  overflow:hidden;margin-bottom:14px;animation:fadeUp .25s ease;
+}
+.commit-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);
+  font-size:12px;transition:background .12s;
+}
+.commit-item:last-child,.pr-item:last-child,.issue-item:last-child{border-bottom:none}
+.commit-item:hover{background:rgba(38,40,64,0.3)}
+.commit-item .commit-avatar{width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:1px}
+.commit-item .commit-body{flex:1;min-width:0}
+.commit-item .commit-msg{font-weight:500;color:var(--fg);line-height:1.4;margin-bottom:2px}
+.commit-item .commit-msg a{color:var(--fg);text-decoration:none}
+.commit-item .commit-msg a:hover{color:var(--blue)}
+.commit-item .commit-meta{font-size:10px;color:var(--dim)}
+.commit-item .commit-meta strong{color:var(--fg2);font-weight:500}
+.commit-item .commit-hash{font-family:ui-monospace,monospace;color:var(--blue);font-size:10px}
+.commit-item .commit-expand{
+  font-size:10px;color:var(--dim);flex-shrink:0;margin-left:8px;
+  transition:transform .15s;width:16px;text-align:center;
+}
+
+/* ─── Commit detail (inline diff) ─── */
+.commit-detail{
+  border-top:1px solid rgba(255,255,255,.04);background:rgba(0,0,0,.15);
+  animation:fadeIn .2s ease;
+}
+.commit-detail-body{padding:10px 14px 10px 44px}
+.commit-desc{
+  font-size:12px;color:var(--fg2);line-height:1.5;margin-bottom:8px;
+  white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:11px;
+}
+.commit-stats{font-size:11px;margin-bottom:8px;display:flex;gap:8px}
+.commit-stats .stat-add{color:var(--green);font-weight:600}
+.commit-stats .stat-del{color:var(--red);font-weight:600}
+.commit-stats .stat-total{color:var(--dim)}
+.commit-files{border:1px solid rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+.commit-file{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 10px;font-size:11px;
+  border-bottom:1px solid rgba(255,255,255,.03);
+  transition:background .12s;
+}
+.commit-file:last-child{border-bottom:none}
+.commit-file:hover{background:rgba(38,40,64,0.4)}
+.file-status{
+  font-size:9px;font-weight:700;width:16px;text-align:center;
+  padding:1px 0;border-radius:3px;flex-shrink:0;
+}
+.file-status.file-added{color:var(--green);background:rgba(126,203,139,.1)}
+.file-status.file-removed{color:var(--red);background:rgba(247,118,142,.1)}
+.file-status.file-modified{color:var(--orange);background:rgba(255,158,100,.1)}
+.file-status.file-renamed{color:var(--blue);background:rgba(122,162,247,.1)}
+.file-path{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg2)}
+.file-stats{font-size:10px;color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.pr-item,.issue-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);
+  font-size:12px;transition:background .12s;cursor:pointer;
+}
+.pr-item:hover,.issue-item:hover{background:rgba(38,40,64,0.3)}
+.pr-item .pr-icon,.issue-item .issue-icon{flex-shrink:0;margin-top:2px;width:16px;height:16px}
+.pr-item .pr-icon svg,.issue-item .issue-icon svg{width:16px;height:16px}
+.pr-item .pr-body,.issue-item .issue-body{flex:1;min-width:0}
+.pr-item .pr-title,.issue-item .issue-title{font-weight:500;color:var(--fg);margin-bottom:1px;line-height:1.3}
+.pr-item .pr-meta,.issue-item .issue-meta{font-size:10px;color:var(--dim)}
+.pr-item .pr-meta strong,.issue-item .issue-meta strong{color:var(--fg2);font-weight:500}
+.pr-item .pr-number,.issue-item .issue-number{font-family:ui-monospace,monospace;color:var(--dim);font-size:10px;flex-shrink:0}
+.pr-state,.issue-state{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.3px;margin-left:6px;
+}
+.pr-state.open,.issue-state.open{background:rgba(126,203,139,.12);color:var(--green)}
+.pr-state.closed,.issue-state.closed{background:rgba(247,118,142,.12);color:var(--red)}
+.pr-state.merged{background:rgba(187,154,247,.15);color:var(--purple)}
+.issue-state.closed-as-pr{background:rgba(187,154,247,.12);color:var(--purple)}
+.list-loading,.list-empty{padding:24px;text-align:center;font-size:12px;color:var(--dim)}
+.list-loading .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bg4);border-top-color:var(--green);border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:-3px}
+
 /* ─── File tree ─── */
 .file-tree{
   background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);

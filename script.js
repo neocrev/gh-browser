@@ -215,6 +215,45 @@ async function renderBranchSwitcher(){
   }
 }
 
+/* ─── Tab state ─── */
+let activeTab='files';
+let tabInit={};
+
+function switchTab(tab){
+  if(tab===activeTab)return;
+  activeTab=tab;
+  qsa('#tab-bar .tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  const content=qs('#content');
+  if(tab==='files'){
+    content.style.display='block';
+    ['commits','prs','issues'].forEach(t=>{
+      const p=qs(`#tab-${t}`);
+      if(p)p.classList.remove('active');
+    });
+  }else{
+    content.style.display='none';
+    ['commits','prs','issues'].forEach(t=>{
+      const p=qs(`#tab-${t}`);
+      if(p)p.classList.toggle('active',t===tab);
+    });
+    if(!tabInit[tab]){tabInit[tab]=true;renderTabContent(tab)}
+  }
+}
+
+async function renderTabContent(tab){
+  const pane=qs(`#tab-${tab}`);
+  if(!pane)return;
+  if(tab==='files')return;
+  pane.innerHTML='<div class="list-loading"><span class="spinner"></span>Loading&hellip;</div>';
+  try{
+    if(tab==='commits')await renderCommits(pane);
+    else if(tab==='prs')await renderPRs(pane);
+    else if(tab==='issues')await renderIssues(pane);
+  }catch(e){
+    pane.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`;
+  }
+}
+
 /* ─── Render ─── */
 function render(){
   updateRateInfo();
@@ -225,7 +264,39 @@ function render(){
   renderBranchSwitcher();
   renderRepoHeader();
   renderBreadcrumb();
+  renderTabs();
   renderContent();
+}
+
+function renderTabs(){
+  const tb=qs('#tab-bar');
+  if(!tb)return;
+  tb.style.display='flex';
+  // Create panes for non-files tabs
+  const content=qs('#content');
+  ['commits','prs','issues'].forEach(t=>{
+    if(!qs(`#tab-${t}`)){
+      const pane=document.createElement('div');
+      pane.id=`tab-${t}`;
+      pane.className='tab-content';
+      content.after(pane);
+    }
+  });
+  if(!tb._wired){
+    tb._wired=true;
+    tb.querySelectorAll('.tab').forEach(b=>{
+      b.addEventListener('click',()=>switchTab(b.dataset.tab));
+    });
+  }
+  // Apply active state
+  tb.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab));
+  ['commits','prs','issues'].forEach(t=>{
+    const p=qs(`#tab-${t}`);
+    if(p)p.classList.toggle('active',activeTab===t);
+  });
+  // Files tab = show #content directly, hide it for other tabs
+  content.style.display=activeTab==='files'?'block':'none';
+  tabInit={};
 }
 
 function renderRepoHeader(){
@@ -276,6 +347,133 @@ async function renderContent(){
   }else{
     renderFilePreview(root,items);
   }
+}
+
+/* ─── Commits tab ─── */
+async function renderCommits(pane){
+  const data=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/commits?sha=${state.branch}&per_page=30`);
+  if(!data.length){pane.innerHTML='<div class="list-empty">No commits found.</div>';return}
+  const list=document.createElement('div');
+  list.className='commit-list';
+  for(const c of data){
+    const item=document.createElement('div');
+    item.className='commit-item';
+    const avatar=c.committer&&c.committer.avatar_url?`<img class="commit-avatar" src="${c.committer.avatar_url}&s=40" alt="">`:'<div class="commit-avatar" style="background:var(--bg4);border-radius:50%"></div>';
+    const msg=c.commit.message.split('\n')[0];
+    const hash=c.sha.substring(0,7);
+    const date=c.commit.author?timeAgo(c.commit.author.date):'';
+    const author=c.commit.author?c.commit.author.name:'unknown';
+    item.innerHTML=`
+      ${avatar}
+      <div class="commit-body">
+        <div class="commit-msg"><a href="${c.html_url}" target="_blank">${escHtml(msg)}</a></div>
+        <div class="commit-meta"><strong>${escHtml(author)}</strong> committed ${date} · <span class="commit-hash">${hash}</span></div>
+      </div>
+      <span class="commit-expand">▶</span>
+    `;
+    const detail=document.createElement('div');
+    detail.className='commit-detail';
+    detail.style.display='none';
+    item.addEventListener('click',async(e)=>{
+      if(e.target.closest('a'))return;
+      const expanded=detail.style.display!=='none';
+      if(expanded){detail.style.display='none';item.querySelector('.commit-expand').textContent='▶';return}
+      if(!detail._loaded){
+        detail.innerHTML='<div class="list-loading"><span class="spinner"></span>Loading diff…</div>';
+        try{
+          const commit=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/commits/${c.sha}`);
+          detail._loaded=true;
+          let html='<div class="commit-detail-body">';
+          if(commit.commit.message.includes('\n')){
+            const body=commit.commit.message.substring(commit.commit.message.indexOf('\n')+1).trim();
+            if(body)html+=`<div class="commit-desc">${escHtml(body.substring(0,2000))}</div>`;
+          }
+          const stats=commit.stats;
+          if(stats)html+=`<div class="commit-stats"><span class="stat-add">+${stats.additions}</span> <span class="stat-del">-${stats.deletions}</span> <span class="stat-total">${stats.total} lines</span></div>`;
+          html+='<div class="commit-files">';
+          for(const f of (commit.files||[])){
+            let statusClass='file-modified',statusLabel='M';
+            if(f.status==='added'){statusClass='file-added';statusLabel='A'}
+            else if(f.status==='removed'){statusClass='file-removed';statusLabel='D'}
+            else if(f.status==='renamed'){statusClass='file-renamed';statusLabel='R'}
+            html+=`<div class="commit-file">
+              <span class="file-status ${statusClass}">${statusLabel}</span>
+              <span class="file-path">${escHtml(f.filename)}</span>
+              <span class="file-stats">+${f.additions}/-${f.deletions}</span>
+            </div>`;
+          }
+          html+='</div></div>';
+          detail.innerHTML=html;
+        }catch(e){detail.innerHTML=`<div class="list-empty">Error: ${e.message}</div>`}
+      }
+      detail.style.display='block';
+      item.querySelector('.commit-expand').textContent='▼';
+    });
+    item.append(detail);
+    list.append(item);
+  }
+  pane.innerHTML='';
+  pane.append(list);
+}
+
+/* ─── PRs tab ─── */
+async function renderPRs(pane){
+  const data=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/pulls?state=all&per_page=30&sort=updated`);
+  if(!data.length){pane.innerHTML='<div class="list-empty">No pull requests found.</div>';return}
+  const list=document.createElement('div');
+  list.className='pr-list';
+  for(const pr of data){
+    const item=document.createElement('div');
+    item.className='pr-item';
+    item.addEventListener('click',()=>window.open(pr.html_url,'_blank'));
+    let stateClass='open',stateLabel='Open';
+    if(pr.merged_at){stateClass='merged';stateLabel='Merged'}
+    else if(pr.state==='closed'){stateClass='closed';stateLabel='Closed'}
+    item.innerHTML=`
+      <span class="pr-icon">${ICONS.code}</span>
+      <div class="pr-body">
+        <div class="pr-title">${escHtml(pr.title)} <span class="pr-state ${stateClass}">${stateLabel}</span></div>
+        <div class="pr-meta">#${pr.number} by <strong>${escHtml(pr.user.login)}</strong> ${timeAgo(pr.created_at)}</div>
+      </div>
+      <span class="pr-number">#${pr.number}</span>
+    `;
+    list.append(item);
+  }
+  pane.innerHTML='';
+  pane.append(list);
+}
+
+/* ─── Issues tab ─── */
+async function renderIssues(pane){
+  const data=await ghFetch(`${API}/repos/${state.owner}/${state.repo}/issues?state=all&per_page=30&sort=updated&filter=all`);
+  if(!data.length){pane.innerHTML='<div class="list-empty">No issues found.</div>';return}
+  const list=document.createElement('div');
+  list.className='issue-list';
+  for(const issue of data){
+    if(issue.pull_request)continue; // skip PRs masquerading as issues
+    const item=document.createElement('div');
+    item.className='issue-item';
+    item.addEventListener('click',()=>window.open(issue.html_url,'_blank'));
+    const stateClass=issue.state==='open'?'open':'closed';
+    const stateLabel=issue.state==='open'?'Open':'Closed';
+    item.innerHTML=`
+      <span class="issue-icon" style="color:${issue.state==='open'?'var(--green)':'var(--dim)'}">${ICONS.repo}</span>
+      <div class="issue-body">
+        <div class="issue-title">${escHtml(issue.title)} <span class="issue-state ${stateClass}">${stateLabel}</span></div>
+        <div class="issue-meta">#${issue.number} by <strong>${escHtml(issue.user.login)}</strong> ${timeAgo(issue.created_at)}${issue.comments?` · ${issue.comments} comments`:''}</div>
+      </div>
+      <span class="issue-number">#${issue.number}</span>
+    `;
+    list.append(item);
+  }
+  pane.innerHTML='';
+  pane.append(list);
+}
+
+function escHtml(s){
+  const d=document.createElement('div');
+  d.textContent=s;
+  return d.innerHTML;
 }
 
 /* ─── README rendering ─── */
