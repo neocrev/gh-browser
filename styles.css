@@ -170,6 +170,36 @@ body{
 .breadcrumb .sep{color:var(--dim);margin:0 1px}
 .breadcrumb .current{color:var(--fg2)}
 
+/* ─── Verified badge ─── */
+.verified-badge{display:inline-flex;vertical-align:-3px;margin-left:4px}
+.verified-badge svg{width:18px;height:18px}
+
+/* ─── License notice ─── */
+.license-notice{
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);
+  padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-size:12px;animation:fadeUp .2s ease;
+}
+.license-notice .lic-icon{color:var(--cyan);flex-shrink:0;display:flex}
+.license-notice .lic-icon svg{width:16px;height:16px}
+.license-notice .lic-text{flex:1;color:var(--fg2)}
+.license-notice .lic-text strong{color:var(--fg)}
+.license-notice .lic-close{
+  background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;
+}
+.license-notice .lic-close:hover{color:var(--fg);background:rgba(255,255,255,.06)}
+
+/* ─── README collapse ─── */
+.readme-collapsed{max-height:270px;overflow:hidden;position:relative;margin-bottom:0!important}
+.readme-collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,rgba(15,16,24,.95));pointer-events:none}
+.readme-toggle{
+  display:block;width:100%;background:var(--bg3);border:1px solid var(--bg4);border-top:none;
+  border-radius:0 0 var(--radius) var(--radius);
+  padding:8px;font-size:11px;color:var(--fg2);cursor:pointer;text-align:center;
+  margin-bottom:14px;transition:all .12s;
+}
+.readme-toggle:hover{background:var(--bg4);color:var(--fg)}
+
 /* ─── File tree ─── */
 .file-tree{
   background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);

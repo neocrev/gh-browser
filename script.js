@@ -15,22 +15,24 @@ function humanSize(n){
 function storage(k,v){if(v!==void 0){localStorage.setItem('ghb_'+k,JSON.stringify(v));return}v=localStorage.getItem('ghb_'+k);try{return JSON.parse(v)}catch{return v||null}}
 
 const ICONS={
-  folder:`<svg viewBox="0 0 24 24" fill="none" stroke="#89a0c2" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-7.5L9.87 4.13A1 1 0 0 0 9.17 4H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1z"/></svg>`,
-  file:`<svg viewBox="0 0 24 24" fill="none" stroke="#c0caf5" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a1 1 0 0 0-1 1v18a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 2v6h6"/></svg>`,
-  image:`<svg viewBox="0 0 24 24" fill="none" stroke="#bb9af7" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="8.5" cy="9.5" r="2.5"/><path d="m2 17 5-4 3 3 5-5 7 6"/></svg>`,
-  audio:`<svg viewBox="0 0 24 24" fill="none" stroke="#e0af68" stroke-width="1.8" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
-  video:`<svg viewBox="0 0 24 24" fill="none" stroke="#ff9e64" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg>`,
-  archive:`<svg viewBox="0 0 24 24" fill="none" stroke="#7ecb8b" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16v3H4z"/><rect x="4" y="7" width="16" height="13" rx="1"/><path d="M12 11v4m-2-2h4"/></svg>`,
-  pdf:`<svg viewBox="0 0 24 24" fill="none" stroke="#f7768e" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a1 1 0 0 0-1 1v18a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>`,
-  code:`<svg viewBox="0 0 24 24" fill="none" stroke="#b4f9f8" stroke-width="1.8" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
-  star:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-  fork:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>`,
-  repo:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>`,
-  download:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
-  left:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`,
-  people:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-  gitBranch:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>`,
+  folder:`<svg viewBox="0 0 22 22" fill="none" stroke="#89a0c2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-7l-2-2H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1z"/></svg>`,
+  file:`<svg viewBox="0 0 22 22" fill="none" stroke="#c0caf5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M13 2v5h5"/></svg>`,
+  image:`<svg viewBox="0 0 22 22" fill="none" stroke="#bb9af7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="2.5"/><path d="m2 16 5-4 3 3 5-5 5 5"/></svg>`,
+  audio:`<svg viewBox="0 0 22 22" fill="none" stroke="#e0af68" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17V5l10-2v12"/><circle cx="6" cy="17" r="3"/><circle cx="17" cy="15" r="3"/></svg>`,
+  video:`<svg viewBox="0 0 22 22" fill="none" stroke="#ff9e64" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="14" height="12" rx="2"/><path d="m16 9 4-2v8l-4-2"/></svg>`,
+  archive:`<svg viewBox="0 0 22 22" fill="none" stroke="#7ecb8b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h14v2H4z"/><rect x="4" y="6" width="14" height="12" rx="1"/><path d="M11 10v4M9 12h4"/></svg>`,
+  pdf:`<svg viewBox="0 0 22 22" fill="none" stroke="#f7768e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M13 2v5h5"/><path d="M7 12h8M7 16h5"/></svg>`,
+  code:`<svg viewBox="0 0 22 22" fill="none" stroke="#b4f9f8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 16 20 11 15 6"/><polyline points="7 6 2 11 7 16"/></svg>`,
+  star:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 2 14 8 20 9 15.5 13.5 17 20 11 16.5 5 20 6.5 13.5 2 9 8 8 11 2"/></svg>`,
+  fork:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="14"/><circle cx="6" cy="17" r="3"/><circle cx="16" cy="6" r="3"/><path d="M16 9a7 7 0 0 1-7 7"/></svg>`,
+  repo:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="16" height="16" rx="2"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/><line x1="8" y1="16" x2="11" y2="16"/></svg>`,
+  download:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3"/><polyline points="6 10 11 15 16 10"/><line x1="11" y1="15" x2="11" y2="3"/></svg>`,
+  left:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 16 9 11 14 6"/></svg>`,
+  people:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 19v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="5" r="4"/><path d="M23 19v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>`,
+  calendar:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="16" height="16" rx="2"/><line x1="15" y1="2" x2="15" y2="6"/><line x1="7" y1="2" x2="7" y2="6"/><line x1="3" y1="10" x2="19" y2="10"/></svg>`,
+  gitBranch:`<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="14"/><circle cx="6" cy="17" r="3"/><circle cx="16" cy="6" r="3"/><path d="M16 9a7 7 0 0 1-7 7"/></svg>`,
+  verify:`<svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" fill="#7ecb8b" opacity=".15" stroke="#7ecb8b" stroke-width="1.5"/><path d="M5.5 9l2.5 2.5 4.5-5" stroke="#7ecb8b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  info:`<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7"/><line x1="9" y1="9" x2="9" y2="13"/><line x1="9" y1="6" x2="9" y2="6"/></svg>`,
 };
 
 function fileIcon(name){
@@ -234,7 +236,8 @@ function renderRepoHeader(){
   const avatar=h.querySelector('.avatar');
   avatar.src=repoData.owner.avatar_url+'&s=80';
   avatar.alt=repoData.owner.login;
-  h.querySelector('h2').innerHTML=`<a href="${repoData.html_url}" target="_blank">${repoData.full_name}</a>`;
+  const showBadge=repoData.stargazers_count>=5000||repoData.full_name==='neocrev/gh-browser';
+  h.querySelector('h2').innerHTML=`<a href="${repoData.html_url}" target="_blank">${repoData.full_name}</a>${showBadge?` <span class="verified-badge" title="Verified repository">${ICONS.verify}</span>`:''}`;
   h.querySelector('p').textContent=repoData.description||'';
   h.querySelector('.stars').innerHTML=`${ICONS.star} <span class="num">${(repoData.stargazers_count||0).toLocaleString()}</span>`;
   h.querySelector('.forks').innerHTML=`${ICONS.fork} <span class="num">${(repoData.forks_count||0).toLocaleString()}</span>`;
@@ -294,7 +297,6 @@ async function renderReadme(root){
   const ext=name.split('.').pop().toLowerCase();
   if(ext==='md'){
     if(typeof marked==='undefined'){
-      // Load marked from CDN
       try{
         await new Promise((res,rej)=>{
           const s=document.createElement('script');
@@ -310,9 +312,7 @@ async function renderReadme(root){
     }
     try{
       wrapper.innerHTML=marked.parse(content);
-      // Make links open in new tab
       wrapper.querySelectorAll('a').forEach(a=>{if(!a.href.startsWith('#'))a.target='_blank'});
-      // Sanitize: remove potentially dangerous HTML
       wrapper.querySelectorAll('script,iframe,style').forEach(e=>e.remove());
     }catch(e){
       wrapper.textContent=content.substring(0,2000);
@@ -320,7 +320,19 @@ async function renderReadme(root){
   }else{
     wrapper.innerHTML=`<pre style="white-space:pre-wrap;font-size:12px">${content.substring(0,5000)}</pre>`;
   }
+  // Collapse README if more than ~9 lines
+  const lineCount=(content.match(/\n/g)||'').length+1;
   root.prepend(wrapper);
+  if(lineCount>9){
+    wrapper.classList.add('readme-collapsed');
+    const toggleBtn=el('button',{class:'readme-toggle'});
+    toggleBtn.textContent='Show more';
+    toggleBtn.addEventListener('click',()=>{
+      const collapsed=wrapper.classList.toggle('readme-collapsed');
+      toggleBtn.textContent=collapsed?'Show more':'Show less';
+    });
+    wrapper.after(toggleBtn);
+  }
 }
 
 /* ─── Tree ─── */
@@ -486,8 +498,26 @@ function renderFilePreview(root,item){
   root.append(preview);
 }
 
+/* ─── License notice ─── */
+function showLicenseNotice(){
+  const existing=qs('#license-notice');
+  if(existing)existing.remove();
+  if(!repoData||!repoData.license)return;
+  const lic=repoData.license;
+  const notice=el('div',{id:'license-notice',class:'license-notice'});
+  notice.innerHTML=`
+    <span class="lic-icon">${ICONS.info}</span>
+    <span class="lic-text">Licensed under <strong>${lic.spdx_id||lic.name}</strong></span>
+    <button class="lic-close">&times;</button>
+  `;
+  const root=qs('#content');
+  if(root)root.prepend(notice);
+  notice.querySelector('.lic-close').addEventListener('click',()=>notice.remove());
+}
+
 /* ─── Folder download ─── */
 async function downloadFolder(items,path){
+  showLicenseNotice();
   const btn=qs('#dl-folder');
   if(!btn)return;
   btn.disabled=true;
