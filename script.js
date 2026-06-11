@@ -574,23 +574,33 @@ function renderFilePreview(root,item){
     note.innerHTML='<p>File too large to preview. <a href="'+item.download_url+'" target="_blank">Download</a> to view.</p>';
     preview.append(note);
   }else{
-    const pre=el('pre');
     const langClass=extToLang(ext);
-    if(langClass)pre.className='language-'+langClass;
-    pre.textContent='Loading…';
+    const pre=el('pre');
+    const code=el('code');
+    if(langClass)code.className='language-'+langClass;
+    pre.append(code);
+    code.textContent='Loading…';
     preview.append(pre);
+    let hljsLoaded=false;
+    const highlight=()=>{
+      if(typeof hljs!=='undefined'&&hljsLoaded){
+        try{hljs.highlightElement(code)}catch(e){}
+      }
+    };
     fetch(item.download_url).then(r=>r.text()).then(t=>{
-      pre.textContent=t;
-      if(typeof hljs!=='undefined')try{hljs.highlightElement(pre)}catch(e){}
-    }).catch(()=>{pre.textContent='[Error loading file content]'});
+      code.textContent=t;
+      highlight();
+    }).catch(()=>{code.textContent='[Error loading file content]'});
     if(typeof hljs==='undefined'){
       const link=document.createElement('link');
       link.rel='stylesheet';link.href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/tokyo-night-dark.min.css';
       document.head.append(link);
       const script=document.createElement('script');
       script.src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js';
-      script.onload=()=>{pre.textContent&&hljs.highlightElement(pre)};
+      script.onload=()=>{hljsLoaded=true;highlight()};
       document.head.append(script);
+    }else{
+      hljsLoaded=true;
     }
   }
   root.append(preview);
