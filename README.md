@@ -1,17 +1,25 @@
 # gh-browser
 
-> Browse GitHub repositories: file sizes, content previews, downloads — all in one clean interface.
-
-<img src="assets/screenshot.svg" alt="gh-browser screenshot" width="600">
+> Browse GitHub repositories with a clean, glassmorphic interface — file trees, content previews, downloads, and more.
 
 ## Features
 
-- **File sizes** — see how big every file is at a glance
-- **Content preview** — view text files with syntax highlighting right in the browser
-- **Download files** — download any file with one click
-- **Download folders** — download entire directories as ZIP archives (built client-side with JSZip)
-- **Recent repos** — quick access to previously browsed repositories
-- **GitHub API aware** — shows rate limit status, supports authentication tokens
+- **Glassmorphism UI** — Tokyo Night–themed with translucent glass cards, blur effects, and smooth animations
+- **File browser** — directory tree with file sizes, inline folder expand/collapse, and file search
+- **Content preview** — view text files with syntax highlighting (30+ languages via highlight.js)
+- **README rendering** — markdown rendered at repo root, collapsed by default (first 9 lines, "Show more" toggle)
+- **Branch switcher** — switch between branches and re-render the tree
+- **File downloads** — download individual files or entire directories as ZIP archives (client-side with JSZip)
+- **License notice** — shows the repository's license before downloading
+- **Verified badge** — green checkmark for repos with 5,000+ stars
+- **User/org search** — search by username or org to see profile stats (followers, stars, top languages, account age)
+- **Trending repos** — curated list of 30 popular repos on the homepage
+- **Autocomplete** — dropdown with recent repos and trending matches as you type (`repo:` and `user:` prefixes supported)
+- **Recent repos** — quick access to previously browsed repos (remove individual entries with ×)
+- **Recent activity** — collapsible section showing pushes, issues, PRs, releases, and more (loaded on demand, hidden by default)
+- **Keyboard shortcuts** — `?` help, `g` go to root, `t` focus file search, `/` focus input, `Esc` blur
+- **API status** — shows remaining requests and reset time; supports authentication tokens
+- **Responsive** — works on desktop, tablet, and mobile (3 breakpoints)
 
 ## Usage
 
@@ -19,12 +27,12 @@
 https://neocrev.github.io/gh-browser/?repo=owner/repo
 ```
 
-Or just enter `owner/repo` in the input field.
+Or enter `owner/repo` (or `user:username`) in the input field.
 
 ## How it works
 
-gh-browser uses the [GitHub REST API](https://docs.github.com/en/rest) to fetch repository contents, file metadata, and raw file content. Folder downloads are built client-side using JSZip — no server required.
+Uses the [GitHub REST API](https://docs.github.com/en/rest) to fetch repository metadata, contents, and branches. Raw file content is fetched from `raw.githubusercontent.com`. ZIP downloads are built entirely client-side with [JSZip](https://stuk.github.io/jszip/). Markdown is rendered with [marked](https://marked.js.org/). No server required.
 
 ## License
 
-This project has a custom license. See [LICENSE](LICENSE) for details.
+Custom license — see [LICENSE](LICENSE). All Rights Reserved.
