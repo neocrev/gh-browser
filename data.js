@@ -67,7 +67,7 @@ function extToLang(ext){
     nim:'nim',zig:'zig',wasm:'wasm',
     cr:'crystal',sml:'sml',ml:'sml',
     sol:'solidity',tf:'hcl',hcl:'hcl',
-    prisma:'prisma',lock:'plaintext','':null,
+    csv:'csv',tsv:'csv',prisma:'prisma',lock:'plaintext','':null,
   };
   return m[ext]||null;
 }

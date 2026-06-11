@@ -545,6 +545,29 @@ async function openFile(path){
   }catch(e){setStatus(`Error: ${e.message}`,'error')}
 }
 
+function parseCSV(text){
+  const lines=[];
+  let cur='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){q=!q;continue}
+    if(c==='\n'&&!q){lines.push(cur);cur='';continue}
+    cur+=c;
+  }
+  if(cur)lines.push(cur);
+  return lines.filter(l=>l.trim()).map(l=>{
+    const row=[];let f='',qt=false;
+    for(let i=0;i<l.length;i++){
+      const c=l[i];
+      if(c==='"'){qt=!qt;continue}
+      if(c===','&&!qt){row.push(f.trim());f='';continue}
+      f+=c;
+    }
+    row.push(f.trim());
+    return row;
+  });
+}
+
 function renderFilePreview(root,item){
   root.innerHTML='';
   const preview=el('div',{class:'file-preview'});
@@ -573,6 +596,42 @@ function renderFilePreview(root,item){
     const note=el('div',{class:'large-note'});
     note.innerHTML='<p>File too large to preview. <a href="'+item.download_url+'" target="_blank">Download</a> to view.</p>';
     preview.append(note);
+  }else if(['csv','tsv'].includes(ext)&&item.size<512*1024){
+    fetch(item.download_url).then(r=>r.text()).then(t=>{
+      const rows=parseCSV(t);
+      if(rows.length<2){preview.innerHTML+='<p style="padding:16px;color:#565f89">Empty or unreadable CSV</p>';return}
+      const table=document.createElement('table');
+      table.style.cssText='width:100%;border-collapse:collapse;font-size:13px;margin:8px 0';
+      const headers=rows[0];
+      const thead=document.createElement('thead');
+      const tr=document.createElement('tr');
+      headers.forEach(h=>{
+        const th=document.createElement('th');
+        th.textContent=h;
+        th.style.cssText='padding:8px 12px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#565f89;background:#1a1b2e;border-bottom:2px solid #24253a;position:sticky;top:0';
+        tr.appendChild(th);
+      });
+      thead.appendChild(tr);
+      table.appendChild(thead);
+      const tbody=document.createElement('tbody');
+      rows.slice(1).forEach(row=>{
+        const tr2=document.createElement('tr');
+        headers.forEach((_,i)=>{
+          const td=document.createElement('td');
+          td.textContent=row[i]||'';
+          td.style.cssText='padding:6px 12px;border-bottom:1px solid #1a1b2e;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+          const n=parseFloat(row[i]);if(!isNaN(n)){td.style.textAlign='right';td.style.fontVariantNumeric='tabular-nums'}
+          tr2.appendChild(td);
+        });
+        tbody.appendChild(tr2);
+      });
+      table.appendChild(tbody);
+      preview.append(table);
+      const info=el('div');
+      info.textContent=`${rows.length-1} rows, ${headers.length} columns`;
+      info.style.cssText='padding:8px 12px;font-size:12px;color:#565f89;border-top:1px solid #24253a';
+      preview.append(info);
+    }).catch(()=>{preview.innerHTML+='<p style="padding:16px;color:#f7768e">Error loading CSV</p>'});
   }else{
     const langClass=fileToLang(item.name);
     const pre=el('pre');
