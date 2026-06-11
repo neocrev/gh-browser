@@ -987,11 +987,13 @@ function renderFilePreview(root,item){
   const binaryExts=['png','jpg','jpeg','gif','webp','bmp','ico','avif','heic','tiff','mp3','flac','ogg','wav','mp4','mkv','avi','mov','webm','zip','tar','gz','bz2','xz','7z','rar','pdf','exe','dll','so','dmg','iso','img'];
   const isBinary=binaryExts.includes(ext)||item.size>1024*1024;
 
+  const ghUrl=`https://github.com/${state.owner}/${state.repo}/blob/${state.branch}/${item.path}`;
   preview.innerHTML=`
     <div class="bar">
       ${fileIcon(item.name)}
       <span class="name">${item.name}</span>
       <span class="size">${humanSize(item.size)}</span>
+      <a href="${ghUrl}" target="_blank" class="dl-btn" title="Open on GitHub">GitHub</a>
       <a href="${item.download_url}" target="_blank" class="dl-btn" download>Download</a>
     </div>
   `;
