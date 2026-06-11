@@ -71,3 +71,19 @@ function extToLang(ext){
   };
   return m[ext]||null;
 }
+
+function fileToLang(name){
+  const dot=name.lastIndexOf('.');
+  const ext=dot>0?name.slice(dot+1).toLowerCase():name.toLowerCase();
+  const byExt=extToLang(ext);
+  if(byExt)return byExt;
+  const fn={
+    '.editorconfig':'ini','.gitattributes':'ini','.gitmodules':'ini',
+    '.npmrc':'ini','.yarnrc':'ini','.editorconfig':'ini',
+    '.prettierrc':'json','.babelrc':'json','.eslintrc':'json',
+    'Makefile':'makefile','Dockerfile':'dockerfile','Containerfile':'dockerfile',
+    'Gemfile':'ruby','Rakefile':'ruby','Podfile':'ruby',
+    'Procfile':'plaintext',
+  };
+  return fn[name.toLowerCase()]||null;
+}

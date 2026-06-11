@@ -574,7 +574,7 @@ function renderFilePreview(root,item){
     note.innerHTML='<p>File too large to preview. <a href="'+item.download_url+'" target="_blank">Download</a> to view.</p>';
     preview.append(note);
   }else{
-    const langClass=extToLang(ext);
+    const langClass=fileToLang(item.name);
     const pre=el('pre');
     const code=el('code');
     if(langClass)code.className='language-'+langClass;
