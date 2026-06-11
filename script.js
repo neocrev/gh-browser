@@ -1263,6 +1263,7 @@ function showShortcuts(){
       <div class="row"><span class="key">g</span> <span class="desc">Return to repo root / home</span></div>
       <div class="row"><span class="key">t</span> <span class="desc">Focus file search</span></div>
       <div class="row"><span class="key">/</span> <span class="desc">Focus repo input</span></div>
+      <div class="row"><span class="key">1-6</span> <span class="desc">Switch tabs (Files, Commits, PRs, Issues, Releases, Search)</span></div>
       <div class="row"><span class="key">Esc</span> <span class="desc">Close help / blur input</span></div>
       <button class="close-btn">Close</button>
     </div>
@@ -1337,6 +1338,15 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(e.key==='/'){
       e.preventDefault();
       inp.focus();
+    }
+    // Tab switching: 1=Files, 2=Commits, 3=PRs, 4=Issues, 5=Releases, 6=Search
+    if(e.key>='1'&&e.key<='6'&&repoData){
+      const tabs=['files','commits','prs','issues','releases','search'];
+      const idx=parseInt(e.key)-1;
+      if(idx<tabs.length&&qs(`.tab[data-tab="${tabs[idx]}"]`)){
+        e.preventDefault();
+        switchTab(tabs[idx]);
+      }
     }
   });
   document.addEventListener('keyup',e=>{
