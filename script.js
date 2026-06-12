@@ -1266,6 +1266,127 @@ function setStatus(msg,type){
   }
 }
 
+/* ─── Go to File (CMD+K / Ctrl+P) ─── */
+let allFilesCache = {};
+let goToFileAbort = null;
+
+async function fetchAllFiles(owner, repo, branch) {
+  const key = `${owner}/${repo}/${branch}`;
+  if (allFilesCache[key]) return allFilesCache[key];
+  try {
+    const ref = await ghFetch(`${API}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`);
+    const files = [];
+    for (const item of ref.tree || []) {
+      if (item.type === 'blob') files.push(item.path);
+    }
+    allFilesCache[key] = files;
+    return files;
+  } catch (e) {
+    return [];
+  }
+}
+
+function showGoToFile() {
+  const existing = qs('.goto-overlay');
+  if (existing) { existing.remove(); return; }
+
+  const overlay = el('div', { class: 'goto-overlay' });
+  overlay.innerHTML = `
+    <div class="goto-box">
+      <div class="goto-header">
+        <span class="goto-icon">${ICONS.code}</span>
+        <input type="text" class="goto-input" placeholder="Go to file in ${state.repo}..." autofocus autocomplete="off">
+        <span class="goto-hint">Esc to close</span>
+      </div>
+      <div class="goto-status">Type to search files…</div>
+      <div class="goto-results"></div>
+    </div>
+  `;
+  document.body.append(overlay);
+
+  const input = overlay.querySelector('.goto-input');
+  const results = overlay.querySelector('.goto-results');
+  const status = overlay.querySelector('.goto-status');
+  let idx = -1;
+  let fileList = [];
+
+  input.focus();
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  fetchAllFiles(state.owner, state.repo, state.branch).then(files => {
+    if (!document.body.contains(overlay)) return;
+    fileList = files;
+    status.textContent = `${files.length} files`;
+  });
+
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+    idx = -1;
+    if (!q || !fileList.length) {
+      results.innerHTML = '';
+      if (!q) status.textContent = fileList.length ? `${fileList.length} files` : 'Type to search files…';
+      else status.textContent = 'No results';
+      return;
+    }
+    const matches = fileList.filter(f => f.toLowerCase().includes(q)).slice(0, 80);
+    if (!matches.length) {
+      results.innerHTML = '';
+      status.textContent = 'No results';
+      return;
+    }
+    status.textContent = `${matches.length} match${matches.length !== 1 ? 'es' : ''}`;
+    results.innerHTML = matches.map((f, i) => {
+      const icon = fileIcon(f.split('/').pop());
+      const parts = f.split('/');
+      const name = parts.pop();
+      const dir = parts.join('/');
+      return `<div class="goto-item" data-idx="${i}">
+        <span class="goto-item-icon">${icon}</span>
+        <span class="goto-item-name">${escHtml(name)}</span>
+        <span class="goto-item-dir">${dir ? escHtml(dir) : '/'}</span>
+      </div>`;
+    }).join('');
+    results.querySelectorAll('.goto-item').forEach(el => {
+      el.addEventListener('click', () => selectGoToFile(matches[+el.dataset.idx]));
+    });
+  });
+
+  input.addEventListener('keydown', e => {
+    const items = results.querySelectorAll('.goto-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      idx = Math.min(idx + 1, items.length - 1);
+      highlightGoToItems(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      idx = Math.max(idx - 1, 0);
+      highlightGoToItems(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (idx >= 0 && items.length) {
+        const match = fileList.filter(f => f.toLowerCase().includes(input.value.toLowerCase().trim()))[idx];
+        if (match) selectGoToFile(match);
+      }
+    } else if (e.key === 'Escape') {
+      overlay.remove();
+    }
+  });
+
+  function highlightGoToItems(items) {
+    items.forEach((el, i) => el.classList.toggle('hl', i === idx));
+    if (idx >= 0) items[idx].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function selectGoToFile(path) {
+  const overlay = qs('.goto-overlay');
+  if (overlay) overlay.remove();
+  state.path = path;
+  switchTab('files');
+  render();
+}
+
 /* ─── Keyboard shortcuts ─── */
 function showShortcuts(){
   const existing=qs('.shortcuts-overlay');
@@ -1276,6 +1397,7 @@ function showShortcuts(){
       <h3>Keyboard Shortcuts</h3>
       <div class="row"><span class="key">?</span> <span class="desc">Toggle this help</span></div>
       <div class="row"><span class="key">g</span> <span class="desc">Return to repo root / home</span></div>
+      <div class="row"><span class="key">Ctrl+K</span> <span class="desc">Go to file</span></div>
       <div class="row"><span class="key">t</span> <span class="desc">Focus file search</span></div>
       <div class="row"><span class="key">/</span> <span class="desc">Focus repo input</span></div>
       <div class="row"><span class="key">1-6</span> <span class="desc">Switch tabs (Files, Commits, PRs, Issues, Releases, Search)</span></div>
@@ -1342,6 +1464,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(e.key==='?'){
       e.preventDefault();
       showShortcuts();
+      return;
+    }
+    if((e.metaKey||e.ctrlKey)&&e.key==='k'){
+      e.preventDefault();
+      if(repoData)showGoToFile();
       return;
     }
     if(e.key==='g'&&!gPressed){gPressed=true;return}
