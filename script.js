@@ -1059,6 +1059,29 @@ function renderFilePreview(root,item){
       info.style.cssText='padding:8px 12px;font-size:12px;color:#565f89;border-top:1px solid #24253a';
       preview.append(info);
     }).catch(()=>{preview.innerHTML+='<p style="padding:16px;color:#f7768e">Error loading CSV</p>'});
+  }else if(['md','markdown'].includes(ext)&&item.size<512*1024){
+    const note=el('div',{class:'markdown-body'});
+    note.style.cssText='padding:20px;max-width:900px;line-height:1.7';
+    note.innerHTML='<p style="color:#565f89">Rendering markdown…</p>';
+    preview.append(note);
+    const mdUrl=item.download_url;
+    const renderMd=(marked)=>{
+      fetch(mdUrl).then(r=>r.text()).then(t=>{
+        note.innerHTML=marked.parse(t);
+        note.querySelectorAll('a').forEach(a=>{a.target='_blank';a.rel='noopener'});
+      }).catch(()=>{note.innerHTML='<p style="color:#f7768e">Error loading markdown</p>'});
+    };
+    if(typeof marked==='undefined'){
+      const link=document.createElement('link');
+      link.rel='stylesheet';link.href='https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-dark.min.css';
+      document.head.append(link);
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/marked@15/marked.min.js';
+      script.onload=()=>renderMd(marked);
+      document.head.append(script);
+    }else{
+      renderMd(marked);
+    }
   }else{
     const langClass=item.name?fileToLang(item.name):'';
     const lnWrap=el('div',{class:'code-wrap'});
