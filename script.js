@@ -1060,22 +1060,37 @@ function renderFilePreview(root,item){
       preview.append(info);
     }).catch(()=>{preview.innerHTML+='<p style="padding:16px;color:#f7768e">Error loading CSV</p>'});
   }else{
-    const langClass=fileToLang(item.name);
+    const langClass=item.name?fileToLang(item.name):'';
+    const lnWrap=el('div',{class:'code-wrap'});
     const pre=el('pre');
     const code=el('code');
     if(langClass)code.className='language-'+langClass;
-    pre.append(code);
     code.textContent='Loading…';
-    preview.append(pre);
+    pre.append(code);
+    lnWrap.append(pre);
+    preview.append(lnWrap);
     let hljsLoaded=false;
-    const highlight=()=>{
+    const renderWithLines=(text)=>{
+      const lines=text.split('\n');
+      const pad=String(lines.length).length;
+      lnWrap.innerHTML=lines.map((l,i)=>{
+        const num=String(i+1).padStart(pad);
+        const esc=l.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `<div class="code-line"><span class="ln">${num}</span><span class="ct">${esc||' '}</span></div>`;
+      }).join('');
+    };
+    const highlightAndRender=()=>{
       if(typeof hljs!=='undefined'&&hljsLoaded){
-        try{hljs.highlightElement(code)}catch(e){}
+        renderWithLines(code.textContent);
+        lnWrap.querySelectorAll('.ct').forEach(el=>{
+          try{hljs.highlightElement(el)}catch(e){}
+        });
       }
     };
     fetch(item.download_url).then(r=>r.text()).then(t=>{
       code.textContent=t;
-      highlight();
+      if(hljsLoaded)highlightAndRender();
+      else renderWithLines(t);
     }).catch(()=>{code.textContent='[Error loading file content]'});
     if(typeof hljs==='undefined'){
       const link=document.createElement('link');
@@ -1083,7 +1098,7 @@ function renderFilePreview(root,item){
       document.head.append(link);
       const script=document.createElement('script');
       script.src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js';
-      script.onload=()=>{hljsLoaded=true;highlight()};
+      script.onload=()=>{hljsLoaded=true;if(code.textContent!=='Loading…')highlightAndRender()};
       document.head.append(script);
     }else{
       hljsLoaded=true;

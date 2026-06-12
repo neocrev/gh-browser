@@ -405,10 +405,16 @@ body{
 }
 .file-preview .bar .dl-btn:hover{opacity:.8}
 .file-preview pre{
-  padding:14px;overflow:auto;font-size:11px;line-height:1.7;max-height:70vh;
+  overflow:auto;font-size:11px;line-height:1.7;max-height:70vh;
   font-family:ui-monospace,'SF Mono','Menlo','Consolas',monospace;color:var(--fg);
   tab-size:2;
 }
+.code-wrap{font-size:11px;line-height:1.7;max-height:70vh;overflow:auto;font-family:ui-monospace,'SF Mono','Menlo','Consolas',monospace;tab-size:2}
+.code-line{display:flex;padding:0 14px;min-height:1.7em}
+.code-line:hover{background:rgba(255,255,255,.03)}
+.code-line .ln{text-align:right;padding-right:16px;color:var(--dim);user-select:none;min-width:32px;opacity:.5;flex-shrink:0}
+.code-line .ct{white-space:pre;flex:1;overflow-x:auto}
+.code-line .ct .hljs{background:transparent!important;padding:0!important}
 .file-preview .binary-note,.file-preview .large-note{padding:36px;text-align:center;color:var(--dim);font-size:13px}
 .file-preview .large-note a,.file-preview .binary-note a{color:var(--blue)}
 
