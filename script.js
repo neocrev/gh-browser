@@ -996,6 +996,7 @@ function renderFilePreview(root,item){
       <a href="${ghUrl}" target="_blank" class="dl-btn" title="Open on GitHub">GitHub</a>
       <a href="${item.download_url}" target="_blank" class="dl-btn" download>Download</a>
       <button class="dl-btn" id="copyContentBtn" title="Copy file content">Copy</button>
+      <button class="dl-btn" id="wrapBtn" title="Toggle word wrap">Wrap</button>
     </div>
   `;
   preview.querySelector('#copyContentBtn').addEventListener('click', async () => {
@@ -1009,6 +1010,19 @@ function renderFilePreview(root,item){
     } catch(e) {
       setStatus('Failed to copy: ' + e.message, 'error');
     }
+  });
+
+  let wrapped = false;
+  preview.querySelector('#wrapBtn')?.addEventListener('click', () => {
+    wrapped = !wrapped;
+    const ctEls = lnWrap?.querySelectorAll('.ct') || [];
+    const btn = preview.querySelector('#wrapBtn');
+    if (btn) btn.style.background = wrapped ? '#32345a' : '';
+    ctEls.forEach(el => {
+      el.style.whiteSpace = wrapped ? 'pre-wrap' : 'pre';
+      el.style.overflowX = wrapped ? 'hidden' : 'auto';
+      el.style.wordBreak = wrapped ? 'break-all' : '';
+    });
   });
 
   if(isBinary||ext==='svg'||ext==='woff'||ext==='woff2'||ext==='ttf'||ext==='eot'){
