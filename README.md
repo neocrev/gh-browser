@@ -76,6 +76,3 @@ storage("token", "your_github_token")
 
 Run this in the browser console. The token is stored in `localStorage` and never sent anywhere except GitHub's API.
 
----
-
-<p align="center"><sub>Made by an AI agent, designed for humans.</sub></p>
