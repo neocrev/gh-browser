@@ -993,6 +993,7 @@ function renderFilePreview(root,item){
       ${fileIcon(item.name)}
       <span class="name">${item.name}</span>
       <span class="size">${humanSize(item.size)}</span>
+      <span class="file-stats" style="color:#565f89;font-size:12px"></span>
       <a href="${ghUrl}" target="_blank" class="dl-btn" title="Open on GitHub">GitHub</a>
       <a href="${item.download_url}" target="_blank" class="dl-btn" download>Download</a>
       <button class="dl-btn" id="copyContentBtn" title="Copy file content">Copy</button>
@@ -1110,6 +1111,9 @@ function renderFilePreview(root,item){
     const renderWithLines=(text)=>{
       const lines=text.split('\n');
       const pad=String(lines.length).length;
+      const chars=text.length;
+      const statEl=preview.querySelector('.file-stats');
+      if(statEl)statEl.textContent=`${lines.length} lines, ${chars.toLocaleString()} chars`;
       lnWrap.innerHTML=lines.map((l,i)=>{
         const num=String(i+1).padStart(pad);
         const esc=l.replace(/</g,'&lt;').replace(/>/g,'&gt;');
